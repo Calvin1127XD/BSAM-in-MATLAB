@@ -1,0 +1,9 @@
+{
+  "date": "2026-09-28",
+  "matlab": "26.1.0.3276743 (R2026a) Update 3",
+  "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "matlab_computational_threads": 2,
+  "retained_source_files": 128,
+  "original_source_hashes_unchanged": true
+}

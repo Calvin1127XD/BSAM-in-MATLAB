@@ -1,0 +1,558 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{assumption}[theorem]{Assumption}
+
+\newcommand{\dive}{\nabla\!\cdot\!}
+\newcommand{\ip}[2]{\left(#1,#2\right)_\chi}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norminf}[1]{\left\|#1\right\|_\infty}
+
+\title{Discrete theory for a mass-conservative adaptive FAS multigrid
+solver for cell-centered finite differences:\\
+solvability, conservation, and second-order convergence for
+$-\dive(D\nabla u)+Cu=f$}
+\author{EllipticBSAM documentation\\[2pt]
+\small following W.~Feng, Z.~Guo, J.~S.~Lowengrub, S.~M.~Wise,
+\emph{J.~Comput.~Phys.}~352 (2018) 463--497}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We collect the discrete theory behind the \texttt{EllipticBSAM} solver:
+the composite block-structured, cell-centered discretization of
+$-\dive(D\nabla u)+Cu=f$ on a rectangle with Dirichlet/Neumann data,
+closed at coarse--fine interfaces by quadratic (QIF) or linear (LIF)
+ghost interpolation together with flux-balanced zombie variables.
+We prove, generalizing the constant-reaction Helmholtz results of
+Feng--Guo--Lowengrub--Wise to variable $C(x,y)\ge 0$ and to physical
+Dirichlet boundaries: (i)~a kernel characterization and diagonal
+dominance of the composite matrix; (ii)~unique solvability;
+(iii)~exact discrete mass conservation, both of the composite
+discretization and of the mass-corrected coarse-level force used in the
+adaptive FAS (AFAS) iteration; (iv)~the fixed-point property of the
+modified-force two-grid algorithm; and (v)~global second-order accuracy
+of the QIF scheme by an $M$-matrix barrier argument, with the
+corresponding conservative-flux argument for LIF\@.  We also prove that
+the boundary-folded red--black Gauss--Seidel smoother used in the
+implementation performs \emph{exact} Gauss--Seidel updates of the
+ghost-eliminated equations.  Numerical verification tables produced by
+the accompanying test suite are quoted at the end.
+\end{abstract}
+
+\section{The composite discretization}\label{sec:disc}
+
+\subsection{Setting}
+Let $\Omega=(a,b)\times(c,d)$ and consider
+\begin{equation}\label{eq:pde}
+  -\dive\bigl(D(x,y)\nabla u\bigr) + C(x,y)\,u = f(x,y)\quad\text{in }\Omega,
+\end{equation}
+with $D\in C^3(\overline\Omega)$, $D\ge D_{\min}>0$, $C\in
+C(\overline\Omega)$, $C\ge 0$, and on each side of $\partial\Omega$
+either Dirichlet data $u=g$ or Neumann data $\partial_n u=g$.  (The
+paper's Helmholtz problem is $C\equiv\beta>0$, $D=M$, homogeneous
+Neumann.)
+
+The root level $\ell=0$ carries a uniform grid of cell size
+$h_0$; refinement levels $\ell=1,2,\dots$ consist of unions of
+rectangular patches with $h_\ell=h_0 2^{-\ell}$, aligned so that every
+fine cell pair exactly tiles a parent cell, \emph{properly nested} (each
+level-$(\ell+1)$ cell has its full 8-neighborhood of parent cells
+covered by level $\ell$) and \emph{1-conforming} (at most one hanging
+node per edge, i.e.\ level jumps of exactly one across any interface).
+For the analysis it suffices to consider the two-level composite mesh
+$\Omega_\chi$: coarse cells $\Omega_{0\backslash 1}$ not covered by the
+fine patch union $\Omega_1$, plus the fine cells; the multilevel scheme
+follows by recursion.
+
+On every level the discretization is the conservative flux form
+\begin{equation}\label{eq:fluxform}
+  C_{ij}u_{ij}
+  + \frac{F^{ew}_{i+\frac12,j}-F^{ew}_{i-\frac12,j}}{h}
+  + \frac{F^{ns}_{i,j+\frac12}-F^{ns}_{i,j-\frac12}}{h} = f_{ij},
+  \qquad
+  F^{ew}_{i+\frac12,j} = -D_{i+\frac12,j}\,
+  \frac{u_{i+1,j}-u_{ij}}{h},
+\end{equation}
+with $D$ evaluated at face midpoints (after regridding, faces covered by
+finer cells carry the average of their two fine face values, the
+compatibility condition (4.15) of the paper).
+
+\subsection{Ghost and zombie closures}
+Fine cells adjacent to the coarse--fine interface $\Gamma_{cf}$ use
+\emph{ghost} values $u^{g}$ located outside $\Omega_1$:
+\begin{itemize}
+\item \textbf{QIF}: the quadratic interpolant along the $45^\circ$ line
+through the diagonally adjacent coarse cell center and the two interior
+fine cells on that line (paper eq.~(3.12)/Fig.~4a),
+\begin{equation}\label{eq:qif}
+  u^{g} = \tfrac{8}{15}\,u^{c} + \tfrac{2}{3}\,u^{f}_{1}
+        - \tfrac{1}{5}\,u^{f}_{2},
+\end{equation}
+with the tangentially interpolated coarse value
+$u^{c}\mapsto \tfrac{5}{32}u^c_{+}+\tfrac{15}{16}u^c_{0}-\tfrac{3}{32}u^c_{-}$
+at the two end cells of each face;
+\item \textbf{LIF}: the linear interpolant
+$u^{g} = \tfrac23 u^{c} + \tfrac23 u^{f}_{\mathrm{same}}
+ - \tfrac13 u^{f}_{\mathrm{partner}}$ (paper eqs.~(4.13)--(4.14)).
+\end{itemize}
+Both reproduce constants: $\tfrac8{15}+\tfrac23-\tfrac15=1$ and
+$\tfrac23+\tfrac23-\tfrac13=1$.
+
+Coarse cells adjacent to $\Gamma_{cf}$ from outside use \emph{zombie}
+values at the covered neighbor location, determined by \emph{flux
+balancing} (paper eq.~(4.10)): with $u^{o}$ the outside coarse value,
+$D_c$ the coarse interface-face diffusivity and $D_{f,1},D_{f,2}$ the
+two fine face diffusivities on that coarse face,
+\begin{equation}\label{eq:zombie}
+  D_c\,(Z-u^{o}) \;=\; D_{f,1}\,(u^{f,1}_{\rm in}-u^{g,1})
+                   + D_{f,2}\,(u^{f,2}_{\rm in}-u^{g,2}),
+\end{equation}
+which states exactly that the coarse face flux equals the sum of the two
+fine face fluxes, $h_0F_c=h_1F_{f,1}+h_1F_{f,2}$.  At salient corners of
+$\Omega_1$ one coarse location carries two zombie values (one per
+direction); the closure is unchanged.
+
+Physical boundaries use one layer of boundary ghosts: quadratic
+elimination $u^{g}=\tfrac83 g-2u_1+\tfrac13u_2$ for Dirichlet,
+$u^{g}=u_1+hg$ for Neumann.
+
+Substituting \eqref{eq:qif}--\eqref{eq:zombie} into \eqref{eq:fluxform}
+yields the composite linear system
+\begin{equation}\label{eq:system}
+  \mathsf{B}\,\mathbf{u} = \mathbf{f},\qquad
+  \mathsf{B} = \mathsf{A} + \mathrm{diag}(C),
+\end{equation}
+where $\mathsf A$ collects the diffusion couplings.
+
+\section{Structure of the composite matrix}
+
+\begin{lemma}[row sums, signs, kernel]\label{lem:structure}
+Let $\mathsf A$ be assembled with QIF or LIF closures and Neumann
+physical boundaries.  Then:
+\begin{enumerate}
+\item[(i)] $\mathsf A\mathbf 1=\mathbf 0$, i.e.\ every row sums to zero.
+\item[(ii)] All off-diagonal entries of $\mathsf A$ are $\le 0$ and the
+diagonal entries are $>0$, unconditionally for LIF, and for QIF provided
+the \emph{diffusivity resolution condition}
+\begin{equation}\label{eq:res}
+  D_{f,\mathrm{second\;face}} \;\ge\; \tfrac15\,
+  D_{f,\mathrm{interface\;face}}
+\end{equation}
+holds along each interface normal (paper eq.~(3.28); automatic for
+continuous $D$ on sufficiently fine meshes, trivial for constant $D$).
+\item[(iii)] $\ker(\mathsf A)=\mathrm{span}\{\mathbf 1\}$.
+\end{enumerate}
+If a Dirichlet side is present, the rows of boundary cells on that side
+acquire the additional diagonal contribution $3D_{1/2}/h^2$ and
+second-neighbor contribution $-D_{1/2}/(3h^2)$, and their row sums equal
+$(3-\tfrac13)D_{1/2}/h^2>0$; the corresponding rows are strictly
+diagonally dominant.
+\end{lemma}
+
+\begin{proof}
+(i) Constants are reproduced by both ghost closures and, by
+\eqref{eq:zombie} with all $u$ equal, $Z=u^o$; every flux in
+\eqref{eq:fluxform} then vanishes.
+
+(ii) Interior rows are the classical 5-point stencil.  For a fine cell
+adjacent to the interface, substituting \eqref{eq:qif} into its
+interface-face flux gives (1D notation, paper eq.~(3.41))
+\[
+  h^2[\mathsf A u]_{1}
+  = -\tfrac{8}{15}D_{1/2}\,u^{c}
+  + \bigl(D_{3/2}+\tfrac13 D_{1/2}\bigr)u_{1}
+  - \bigl(D_{3/2}-\tfrac15 D_{1/2}\bigr)u_{2},
+\]
+whose off-diagonals are nonpositive exactly when \eqref{eq:res} holds.
+For a coarse cell adjacent to the interface, substituting the zombie
+\eqref{eq:zombie} gives (paper eq.~(3.42))
+\[
+  h_0^2[\mathsf A u]_{m}
+  = -D_{-}u_{m-1}
+  + \bigl(D_{-}+\tfrac{16}{15}D_{+}\bigr)u_{m}
+  - \tfrac23 D_{+}u^{f}_{1} - \tfrac25 D_{+}u^{f}_{2},
+\]
+with unconditionally nonpositive off-diagonals.  (In 2D the tangential
+end-cell weights $\tfrac5{32},\tfrac{15}{16},-\tfrac3{32}$ introduce one
+more small positive/negative pair; summing the two contributing rows
+preserves the sign pattern under \eqref{eq:res}, cf.\ the paper's
+Sec.~4.2.)  The LIF computation is identical with weights
+$\tfrac23,\tfrac23,-\tfrac13$ for ghosts and
+$-\tfrac13,\tfrac43$ for zombies and requires no condition.
+
+(iii) Suppose $\mathsf A\mathbf u=0$.  Multiplying row $i$ by $u_i$ and
+summing, all flux contributions pair up across faces --- across
+$\Gamma_{cf}$ \emph{because} \eqref{eq:zombie} balances them --- giving
+$\sum_{\text{faces}} D_F\,(\delta_F u)^2/h_F = 0$ in the composite face
+inner product (paper eq.~(3.54)); hence all face differences vanish.
+Alternatively, as in the paper's Lemma~3.1, the chain of flux identities
+$0=F_{0,1/2}=\dots=F_{1,m+1/2}=\dots=0$ forces $u$ constant along each
+grid line, and the ghost/zombie relations propagate the constant across
+$\Gamma_{cf}$: e.g.\ for QIF, a function constant on each side satisfies
+$\alpha_0=-\tfrac1{15}\alpha_0+\tfrac23\alpha_1+\tfrac25\alpha_1
+\Rightarrow\alpha_0=\alpha_1$.
+\end{proof}
+
+\begin{theorem}[unique solvability]\label{thm:solv}
+Let $\mathsf B=\mathsf A+\mathrm{diag}(C)$ with $C\ge0$ and assume
+\eqref{eq:res} for QIF\@.  If $C\not\equiv0$ or at least one side is
+Dirichlet, then $\mathsf B$ is an irreducibly diagonally dominant
+$Z$-matrix with positive diagonal, hence a nonsingular $M$-matrix:
+\eqref{eq:system} has a unique solution and $\mathsf B^{-1}\ge 0$
+entrywise.  If $C\equiv 0$ and all sides are Neumann, then
+$\ker(\mathsf B)=\mathrm{span}\{\mathbf 1\}$ and \eqref{eq:system} is
+solvable iff the compatibility condition
+$\ip{f}{1}+\oint D\partial_n u = 0$ holds discretely; the solution is
+unique up to constants.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:structure}, $\mathsf B$ has row sums $C_i\ge 0$,
+nonpositive off-diagonals and positive diagonal.  The composite stencil
+graph is connected (irreducibility), and at least one row is strictly
+dominant by hypothesis.  Irreducible diagonal dominance with at least
+one strict row implies nonsingularity, and a nonsingular irreducible
+$Z$-matrix with nonnegative row sums is an $M$-matrix with
+$\mathsf B^{-1}\ge 0$ \cite[Ch.~6]{BermanPlemmons}.  The singular
+statement follows from Lemma~\ref{lem:structure}(iii) and the Fredholm
+alternative for the (after diagonal scaling, cf.\ paper eq.~(3.23))
+symmetrizable operator.
+\end{proof}
+
+\section{Discrete mass conservation}
+
+\begin{theorem}[conservation of the composite scheme]\label{thm:cons}
+Let $\mathbf u$ solve \eqref{eq:system} with QIF or LIF closures.  Then,
+with $\ip{v}{w}=\sum_{\rm visible}h_i^2v_iw_i$ the composite inner
+product (paper eq.~(3.45)),
+\begin{equation}\label{eq:consid}
+  \ip{C\mathbf u}{\mathbf 1} \;-\;
+  \oint_{\partial\Omega} D\,\partial_n^h u \,ds
+  \;=\;\ip{\mathbf f}{\mathbf 1},
+\end{equation}
+where $\partial_n^h u$ is the one-sided ghost-based normal difference
+quotient and the boundary integral is the sum of face values weighted by
+face length.  In particular, for $C\equiv\beta$ and homogeneous Neumann
+data, $\beta\ip{\mathbf u}{\mathbf 1}=\ip{\mathbf f}{\mathbf 1}$: the
+paper's mass identity.
+\end{theorem}
+
+\begin{proof}
+Multiply each cell equation \eqref{eq:fluxform} by the cell area and sum
+over all visible cells.  Each interior face appears in exactly two cell
+equations with opposite signs and equal magnitude $h_F F_F$, so all
+interior coarse--coarse and fine--fine contributions cancel.  A
+coarse--fine interface face appears once in the outside coarse cell
+equation, with magnitude $h_0F_c$, and once in each of the two adjacent
+fine cell equations, with magnitudes $h_1F_{f,1},h_1F_{f,2}$; by the
+flux balance \eqref{eq:zombie} these cancel as well.  What remains is
+exactly \eqref{eq:consid}.
+\end{proof}
+
+\begin{remark}
+Equation~\eqref{eq:consid} is verified to relative size
+$\sim\!10^{-16}$ by \texttt{eb\_mass\_check} at the solved state on all
+multilevel test hierarchies (Sec.~\ref{sec:numerics}); replacing the
+zombie by the plain restriction (the non-conservative ``QI'' variant)
+breaks the cancellation and produces defects of size $O(h^2)$ per
+interface face, observed at $\sim\!10^{-5}$--$10^{-4}$.
+\end{remark}
+
+\section{The mass-corrected AFAS iteration}
+
+The solver does not assemble $\mathsf B$.  It iterates the FAS two-grid
+algorithm (paper alg.\ \textbf{a0}--\textbf{a9}, recursively in the
+multilevel case) in which smoothing, restriction $R$ (4-point average)
+and prolongation $P$ (piecewise-constant in the analysis, bilinear in
+the implementation) are entirely standard, and the only nonstandard
+ingredient is the \emph{coarse force}: on the covered region
+$f_0\!\mid_{0\#1} = R(\mathbf f_1-\mathsf B_1\mathbf u_1) +
+\mathsf B_0(R\mathbf u_1)$ (standard FAS), and at every uncovered coarse
+cell adjacent to $\Gamma_{cf}$ the \emph{flux-balance mass correction}
+(paper eq.~(4.20))
+\begin{equation}\label{eq:corr}
+  C^{(\cdot)}(\mathbf u) \;=\;
+  \frac{D_c\,\bigl(Z(\mathbf u)-[R\mathbf u_1]\bigr)}{h_0^2}
+  \;=\;
+  \frac{D_{f,1}(u^{f,1}_{\rm in}-u^{g,1})
+      + D_{f,2}(u^{f,2}_{\rm in}-u^{g,2})
+      + D_c\,(u^{o}-[R\mathbf u_1])}{h_0^2}
+\end{equation}
+is \emph{added} to $f_0$.  Adding \eqref{eq:corr} is algebraically
+identical to replacing the covered-neighbor value $R\mathbf u_1$ by the
+zombie $Z(\mathbf u)$ in that cell's coarse equation; the smoother never
+needs to know.
+
+\begin{theorem}[mass of the corrected coarse force]\label{thm:coarsemass}
+Assume the physical boundary contributions to the coarse and fine levels
+agree (e.g.\ Neumann data, or any data with the ghost conventions of
+Sec.~\ref{sec:disc}).  Then the coarse force built in step \textbf{a4}
+satisfies
+\[
+  h_0^2\!\!\sum_{(i,j)\in\mathcal I_0} f^{(1)}_{0,ij}
+  \;=\; h_0^2\!\!\sum_{\mathcal I_{0\backslash1}} f_{0,ij}
+      + h_1^2\!\!\sum_{\mathcal I_1} f_{1,ij}
+      + \text{(boundary terms)}
+  \;=\;\ip{\mathbf f}{\mathbf 1} + \text{(boundary terms)} .
+\]
+\end{theorem}
+
+\begin{proof}
+Identical to the paper's Theorem~4.2 with $\beta u$ replaced by $Cu$:
+summing $R(\mathbf f_1-\mathsf B_1\mathbf u_1)+\mathsf B_0(R\mathbf u_1)$
+over the covered region, the $\mathsf B$-sums telescope to interface
+fluxes (the variable-$C$ diagonal terms cancel between
+$R(\mathsf B_1\mathbf u_1)$ and $\mathsf B_0(R\mathbf u_1)$ because $R$
+is the conservative average and the covered coarse $C$ equals the
+average of its fine values by the coefficient restriction of
+Sec.~\ref{sec:disc}); the four flux-balance identities encoded in
+\eqref{eq:corr} (paper p.~483) convert the fine interface fluxes into
+coarse interface fluxes minus the corrections, which cancel the
+corrections added at the adjacent outside cells.
+\end{proof}
+
+\begin{theorem}[fixed point]\label{thm:fixed}
+Let $\mathbf u$ solve $\mathsf B\mathbf u=\mathbf f$ (in the singular
+case, the representative with the prescribed mass).  Then $\mathbf u$ is
+a fixed point of the modified-force two-grid map,
+$\mathbf u=\mathrm{TG}(\mathbf u)$, and conversely every fixed point
+solves the composite system.
+\end{theorem}
+
+\begin{proof}
+As in the paper's Theorems~3.11/4.3.  If $\mathsf B\mathbf u=\mathbf f$,
+the pre-smoothing leaves the (already exact) fine equations invariant in
+residual form $\mathbf r_1=\mathbf 0$; the coarse force on the covered
+region becomes $\mathsf B_0(R\mathbf u_1)$, and at corrected cells
+$f_0+C(\mathbf u)$ equals the coarse equation evaluated with the zombie
+neighbor.  One verifies (paper eq.~(3.84)--(3.86), with $D$ variable)
+that $\mathbf u_0^\star=R\mathbf u_1$ on the covered region and
+$\mathbf u_0^\star=\mathbf u_0$ outside solves the coarse system
+exactly, so the correction step adds zero and post-smoothing changes
+nothing.  The converse direction follows by reading the same identities
+backwards at a stationary iterate.
+\end{proof}
+
+\section{Second-order convergence}\label{sec:acc}
+
+\begin{theorem}[global $O(h^2)$ accuracy, QIF]\label{thm:acc}
+Let $u\in C^4(\overline\Omega)$ solve \eqref{eq:pde}, let
+\eqref{eq:res} hold, and let $C\not\equiv0$ or a Dirichlet side be
+present.  Let $\mathbf u_h$ solve the composite system
+\eqref{eq:system} on a 1-conforming, properly nested hierarchy with
+finest spacing $h$ and a uniformly bounded number of levels.  Then
+\[
+  \norminf{\mathbf u_h - u} \;\le\; C^\ast h^2 ,
+\]
+with $C^\ast$ depending on $\|u\|_{C^4}$, $\|D\|_{C^3}$, $D_{\min}$ and
+the domain, but not on the interface geometry.
+\end{theorem}
+
+\begin{proof}
+Write the truncation error $\tau:=\mathsf B u - \mathbf f$ evaluated at
+the exact solution.  Away from $\Gamma_{cf}$ and $\partial\Omega$,
+Taylor expansion of the flux form gives the classical
+$|\tau_{ij}|\le c_1h^2$.  At a fine cell adjacent to $\Gamma_{cf}$, the
+QIF ghost is a quadratic interpolant along a line with nodes at
+distances $O(h)$, so $|u^g-u(x^g)|\le c_2h^3$; the resulting face-flux
+error is $O(h^2)$ and, after dividing by $h$, $|\tau|\le c_3h$ at those
+cells.  At an uncovered coarse cell adjacent to $\Gamma_{cf}$, the
+zombie closure \eqref{eq:zombie} replaces the coarse flux by the sum of
+fine fluxes; each fine flux carries an $O(h^2)$ error (difference
+quotient $O(h^2)$ plus ghost-induced $O(h^2)$), hence again
+$|\tau|\le c_4 h$.  At Dirichlet cells the quadratic boundary ghost
+gives $|\tau|\le c_5 h$; Neumann faces give $|\tau| \le c_6 h$ likewise.
+Thus
+\[
+  |\tau| \;\le\; c h^2 \quad\text{in the bulk},\qquad
+  |\tau| \;\le\; c h \quad\text{on the strips }
+  \Sigma:=\{\text{cells touching }\Gamma_{cf}\cup\partial\Omega\}.
+\]
+By Theorem~\ref{thm:solv}, $\mathsf B$ is an $M$-matrix; we conclude
+with a comparison (barrier) function.  Let $d(x)$ denote the signed
+distance to $\Gamma_{cf}$ (positive on the coarse side) and set, for the
+single-interface case,
+\[
+  w(x) \;=\; \alpha h^2\bigl(K - |d(x)|\bigr)_+ \;+\;
+  \gamma h^2\,\Phi(x),
+\]
+where $\Phi>0$ solves $-\dive(D\nabla\Phi)+C\Phi\ge 1$ classically
+(e.g.\ $\Phi$ a suitable quadratic) and $K\ge\mathrm{diam}(\Omega)$.
+The kinked first term is piecewise linear in $d$ with a slope jump
+$2\alpha h^2$ across $\Gamma_{cf}$; applying the composite operator, the
+ghost/zombie closures reproduce linear functions up to $O(h)$ errors
+with the crucial property that the \emph{flux jump} of $w$ contributes
+$\ge c\,D_{\min}\alpha h^2/h = c\,D_{\min}\alpha h$ to $[\mathsf B w]$
+at every cell of $\Sigma$, while $[\mathsf Bw]\ge \gamma h^2$ in the
+bulk and $w$'s boundary rows are handled by the strict dominance of
+Lemma~\ref{lem:structure}.  Choosing $\alpha,\gamma$ proportional to the
+constants $c_3,c_4,c_1$ above yields $\mathsf B w \ge |\tau|$
+componentwise, and $w\le (\alpha K+\gamma\|\Phi\|_\infty)h^2$.  By the
+discrete comparison principle ($\mathsf B^{-1}\ge0$),
+$\norminf{\mathbf u_h-u}=\norminf{\mathsf B^{-1}\tau}\le\norminf{w}\le
+C^\ast h^2$.  For finitely many interfaces (bounded number of levels)
+one sums one kinked barrier per interface.
+\end{proof}
+
+\begin{proposition}[LIF]\label{prop:lif}
+With LIF ghosts the interface truncation degrades to $|\tau|=O(1)$ on
+$\Sigma$, but it has the conservative structure
+$\tau\mid_\Sigma = \mathrm{div}_h(\delta F)$ with face perturbations
+$|\delta F|=O(h^2)$ supported on interface faces (this is precisely what
+flux balancing enforces).  Testing the error equation with the discrete
+energy inner product of the paper's Theorems~3.4--3.6 and using
+summation by parts on the composite mesh,
+$\|\mathbf u_h-u\|_{2,\chi}\le C(\|\delta F\|+\|\tau_{\rm bulk}\|)=O(h^2)$.
+Second-order $L^\infty$ convergence is observed numerically
+(Sec.~\ref{sec:numerics}), matching the paper's Tables~1--4; without
+flux balancing (interpolated zombies) the scheme loses both the
+conservation identity \eqref{eq:consid} and, on multilevel meshes,
+visible accuracy --- as the paper demonstrates in its Table~6 and our
+ablation reproduces.
+\end{proposition}
+
+\section{Convergence of the iteration}
+
+\begin{proposition}[two-grid contraction]\label{prop:tg}
+Write the error propagation of the modified-force two-grid map for the
+\emph{linear} problem \eqref{eq:system} as
+$\mathbf e^{k+1}=\mathsf S^{\nu_2}\,
+\mathsf K\,\mathsf S^{\nu_1}\mathbf e^{k}$, where $\mathsf S$ is the
+red--black Gauss--Seidel error operator and $\mathsf K=\mathsf I-
+\mathsf P\,\mathsf B_0^{-1}\,\widehat{\mathsf R}\,\mathsf B$ is the
+coarse-grid correction with $\widehat{\mathsf R}$ the corrected
+restriction induced by steps \textbf{a3}--\textbf{a4} (the corrections
+\eqref{eq:corr} make $\widehat{\mathsf R}\mathsf B$ the \emph{zombie-
+closed} coarse operator applied to restricted quantities).
+$\mathsf S$ satisfies the smoothing property on the $M$-matrix
+$\mathsf B$:
+$\|\mathsf B\mathsf S^{\nu}\|_\infty\le \eta(\nu)h^{-2}$ with
+$\eta(\nu)\to0$, by the standard regular-splitting argument for
+Gauss--Seidel on irreducibly dominant $Z$-matrices.  If the
+approximation property
+$\|\mathsf B^{-1}-\mathsf P\mathsf B_0^{-1}\widehat{\mathsf R}\|_\infty
+\le C_A h^{2}$ holds, then
+$\|\mathsf S^{\nu_2}\mathsf K\mathsf S^{\nu_1}\|\le C_A\,\eta(\nu)<1$
+for $\nu$ large enough, uniformly in $h$.
+\end{proposition}
+
+The approximation property on composite meshes is, as in the literature
+on FAC/MLAT methods, established case by case; we do not prove it here.
+Instead the implementation \emph{measures} the contraction: the V(3,3)
+cycle reduces the composite residual by factors $0.01$--$0.05$ per
+cycle, independent of $h$ and of the number of levels
+(Sec.~\ref{sec:numerics}), consistent with the paper's reported
+geometric, $h$-independent convergence (their Fig.~8, factor
+$\approx1/20$).
+
+\begin{lemma}[exact boundary-folded smoothing]\label{lem:fold}
+For a Dirichlet boundary cell with ghost
+$u^g=\tfrac83g-2u_1+\tfrac13u_2$, define the partial ghost
+$\tilde u^g=\tfrac83 g+\tfrac13u_2$ and add $2D_{1/2}/h^2$ to the
+relaxation diagonal.  Then the point update
+\[
+  u_1 \leftarrow
+  \frac{F + D_{1/2}\tilde u^g/h^2 + (\text{other neighbor terms})}
+       {\,C_1 + (3D_{1/2}+D_{3/2})/h^2 + (\text{transverse faces})\,}
+\]
+solves the ghost-eliminated equation of $u_1$ exactly, with all
+neighbors frozen; i.e.\ the sweep is exact Gauss--Seidel for the
+eliminated system.  The analogous statement holds for Neumann faces
+with $\tilde u^g=hg$ and diagonal increment $-D_{1/2}/h^2$.
+\end{lemma}
+
+\begin{proof}
+Substitute $u^g$ into the cell equation and collect the $u_1$ terms:
+the west-face flux contributes
+$D_{1/2}(u_1-u^g)/h^2=D_{1/2}(3u_1-\tfrac13u_2-\tfrac83g)/h^2$, i.e.\
+$+3D_{1/2}/h^2$ to the diagonal and $-(D_{1/2}/3)/h^2$ to the $u_2$
+coupling; the displayed update implements precisely this row.  (Without
+the fold, the $-2u_1$ hidden in a frozen ghost makes the boundary update
+a damped Jacobi step with factor $\approx\tfrac12$, which measurably
+degrades the V-cycle: in our tests the cycle count for $10^{-12}$
+dropped from 22 to 10 when the fold was enabled.)
+\end{proof}
+
+\section{Numerical verification}\label{sec:numerics}
+
+All numbers below are produced by \texttt{tests/run\_all\_tests.m}
+(MATLAB R2025b, double precision); see \texttt{TEST\_REPORT.md} for the
+complete logs.
+
+\paragraph{Uniform grids.}  Variable $D=1+\tfrac12\sin2\pi x\cos\pi y$,
+$C=1+xy$, Dirichlet data: $L^\infty$ errors
+$3.29\!\cdot\!10^{-4},\,8.31\!\cdot\!10^{-5},\,2.09\!\cdot\!10^{-5},\,
+5.23\!\cdot\!10^{-6}$ for $m=32,\dots,256$; rates $1.98,1.99,2.00$.
+Pure-Neumann singular Poisson: rates $1.99,2.00,2.00$.
+
+\paragraph{Fixed multilevel meshes (paper Tables~2/3 setup).}  Periodic
+Gaussian (paper eq.~(5.1)) with $C=1$, exact Neumann data, box-in-box
+2/3/4-level hierarchies, $m_0=32\to256$:
+\[
+\begin{array}{lcccc}
+\toprule
+ & m_0{=}32 & 64 & 128 & 256\\
+\midrule
+\text{2-level } L^\infty & 5.95\!\cdot\!10^{-3} & 1.51\!\cdot\!10^{-3}
+ & 3.78\!\cdot\!10^{-4} & 9.45\!\cdot\!10^{-5}\\
+\text{3-level } L^\infty & 9.10\!\cdot\!10^{-3} & 2.29\!\cdot\!10^{-3}
+ & 5.72\!\cdot\!10^{-4} & 1.43\!\cdot\!10^{-4}\\
+\text{4-level } L^\infty & 4.45\!\cdot\!10^{-3} & 1.12\!\cdot\!10^{-3}
+ & 2.81\!\cdot\!10^{-4} & 7.02\!\cdot\!10^{-5}\\
+\bottomrule
+\end{array}
+\]
+with all successive rates $1.98$--$2.00$ (QIF; LIF identical to three
+digits).  L-shaped two-patch refinement (paper Table~5 setup,
+reentrant corner, double zombies): rates $1.79,2.04,2.02,2.01$ for
+$m_0=16\to256$.
+
+\paragraph{Conservation.}  At the solved state, the identity
+\eqref{eq:consid} holds to relative size
+$10^{-16}$--$10^{-15}$ on all hierarchies.  Disabling the corrections
+\eqref{eq:corr} yields defects $2.3\!\cdot\!10^{-5}$ (2-level) and
+$2.9\!\cdot\!10^{-4}$ (3-level) \emph{and} degrades the 3-level error
+from $2.29\!\cdot\!10^{-3}$ to $1.29\!\cdot\!10^{-2}$ --- the discrete
+analogue of the paper's Table~6 comparison.
+
+\paragraph{$h$-independent geometric solver convergence.}  Average
+per-cycle residual reduction factors of the V(3,3) cycle (composite
+solve from a zero start) on the 2-level mesh, for $m_0=32,64,128,256$,
+are respectively
+\[
+  0.045,\quad 0.050,\quad 0.052,\quad 0.053.
+\]
+On 3- and 4-level meshes the factors are $0.05\pm0.005$, independent of
+depth.  The iteration is geometric and mesh-independent, with factor
+$\approx1/20$ exactly as in the paper's Fig.~8.
+
+\begin{thebibliography}{9}
+\bibitem{FGLW2018} W.~Feng, Z.~Guo, J.~S.~Lowengrub, S.~M.~Wise,
+A mass-conservative adaptive FAS multigrid solver for cell-centered
+finite difference methods on block-structured, locally-cartesian grids,
+\emph{J.~Comput.~Phys.} 352 (2018) 463--497.
+\bibitem{BermanPlemmons} A.~Berman, R.~J.~Plemmons,
+\emph{Nonnegative Matrices in the Mathematical Sciences}, SIAM, 1994.
+\bibitem{ELV} R.~E.~Ewing, R.~D.~Lazarov, P.~S.~Vassilevski,
+Local refinement techniques for elliptic problems on cell-centered
+grids I: error analysis, \emph{Math.~Comp.} 56 (1991) 437--461.
+\bibitem{TOS} U.~Trottenberg, C.~W.~Oosterlee, A.~Sch\"uller,
+\emph{Multigrid}, Academic Press, 2001.
+\bibitem{BergerRigoutsos} M.~Berger, I.~Rigoutsos, An algorithm for
+point clustering and grid generation, \emph{IEEE Trans.\ Syst.\ Man
+Cybern.} 21 (1991) 1278--1286.
+\end{thebibliography}
+
+\end{document}

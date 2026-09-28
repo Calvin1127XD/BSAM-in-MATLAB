@@ -1,0 +1,677 @@
+{
+  "source_repository": "https://github.com/Calvin1127XD/BSAMElliptic",
+  "source_base_commit": "5fd98ff9f7fe475e8fd9eccad4527e04e4a80de8",
+  "snapshot": "working tree, including local corrections",
+  "files": [
+    {
+      "path": "EllipticBSAM/AUDIT_REPORT.md",
+      "sha256": "6b273c0825841bdb85f3e6ed40c24597713e672e0bf214ce4d25ed3acc250079"
+    },
+    {
+      "path": "EllipticBSAM/BSAM_Code_Documentation.pdf",
+      "sha256": "1200bf05833e986981547be089dedcbd6a04388694c1468ecde0bb2eebbc6d5b"
+    },
+    {
+      "path": "EllipticBSAM/BSAM_Code_Documentation.tex",
+      "sha256": "52423a586154b6d6f57b129ef72727b45391204ad5241f60202eac5cde58e631"
+    },
+    {
+      "path": "EllipticBSAM/README.md",
+      "sha256": "c188492078d5e851f147cc8d4cdee4c6f04dcf317650dc84402d59ba02adbd91"
+    },
+    {
+      "path": "EllipticBSAM/TEST_REPORT.md",
+      "sha256": "17068194e1871e841bc2968b41f791f611bfc392ab1406445bdde2ec8637ce40"
+    },
+    {
+      "path": "EllipticBSAM/docs/convergence_theory.pdf",
+      "sha256": "5ac056b5653f5e0b59a4c157dcd3501e917aa7fe19110ae6cec68a24b3640197"
+    },
+    {
+      "path": "EllipticBSAM/docs/convergence_theory.tex",
+      "sha256": "3ec8e2f687c571330dcd0ae9ed8abb3f739c1b97087655a01b43364e3ecb9069"
+    },
+    {
+      "path": "EllipticBSAM/docs/implementation_audit.tex",
+      "sha256": "1d14646fbe8a10ef975063a85bb7c37008cdca54b82b86d5b8811a9ddcf961ad"
+    },
+    {
+      "path": "EllipticBSAM/examples/demoBasicUniform.m",
+      "sha256": "bfa8076e3745bef90029c41c565d1e9f597e5329d8cb76dbcb91bc9934316a1e"
+    },
+    {
+      "path": "EllipticBSAM/examples/demoPoissonAdaptive.m",
+      "sha256": "a89f90a3f8ada52df9b6bf09e52f70faf36a6eddd58e0c88ab20464449bd5742"
+    },
+    {
+      "path": "EllipticBSAM/examples/demoVisualWalkthrough.m",
+      "sha256": "8ac5b992a4b13d3f043827ca5f014a0eb0463bc086096c73f6a70f4e1083fa39"
+    },
+    {
+      "path": "EllipticBSAM/examples/expAmrVsUniform.m",
+      "sha256": "f646766260e1294f1edb044a46a6116c68390e14b9a1b3059fa1a8fafbc2e2f7"
+    },
+    {
+      "path": "EllipticBSAM/examples/expAmrVsUniform2.m",
+      "sha256": "a4794b7f504bcf6f29d4a0297edf15f430d4c2bacaa95e6951a0b744e40058e1"
+    },
+    {
+      "path": "EllipticBSAM/examples/makeConvergenceStudy.m",
+      "sha256": "a338354bb1707158a11bbc60a0e22162edba3b325edf425dd884b521cbcfea7b"
+    },
+    {
+      "path": "EllipticBSAM/src/ebAddLevel.m",
+      "sha256": "8dd98c468f3ba135637138592a15d8c975380379019ffc79323840ea2d512bf6"
+    },
+    {
+      "path": "EllipticBSAM/src/ebBcFold.m",
+      "sha256": "871751d3d187f9dd7e0f3166549b0f85431815db625b03e1c7478164c6ee6596"
+    },
+    {
+      "path": "EllipticBSAM/src/ebBuildOps.m",
+      "sha256": "550c4e354a601f593ab588a5452b0b8973e64d6757ac0be8b6aae0d06cc6b978"
+    },
+    {
+      "path": "EllipticBSAM/src/ebCoarseLoad.m",
+      "sha256": "bc3ee0e173e9a93c03d894f04c6b614c26cf6ace32a5d5c176f995fddb5b50f5"
+    },
+    {
+      "path": "EllipticBSAM/src/ebCoarsest.m",
+      "sha256": "34a8695d97be657f986ded163e0ea1c98cbe8e067ed8a25cf7e6da96f2e10c3d"
+    },
+    {
+      "path": "EllipticBSAM/src/ebCoeffFilldown.m",
+      "sha256": "40176742875e43b8d620593cebfff7ebacf0f850a53bbc4c919a9b289020bd44"
+    },
+    {
+      "path": "EllipticBSAM/src/ebCompResidual.m",
+      "sha256": "603f79544c1c96f0ae012ac46cbacdad588c6a0634e8f3fdfa65f68fbd057ce9"
+    },
+    {
+      "path": "EllipticBSAM/src/ebCompatProject.m",
+      "sha256": "8d2d20a76b6b1194e1412c8717bf66dd3bfd0923bd358f72e70912e13565fa9e"
+    },
+    {
+      "path": "EllipticBSAM/src/ebCompositeMean.m",
+      "sha256": "8719d3ef8e156df826ea70fbd55ab1fe1b52451fcf89de105dc06248b202a4f8"
+    },
+    {
+      "path": "EllipticBSAM/src/ebErrorNorms.m",
+      "sha256": "c52de316d42e1474ca2f0f636cd46759bf7a2ead481a2e47e0400173cd7b12b3"
+    },
+    {
+      "path": "EllipticBSAM/src/ebFaceCorrections.m",
+      "sha256": "d20f18ddc09fd2c68350f0d0ed36188053cbc856d28684d4174593f58be9df32"
+    },
+    {
+      "path": "EllipticBSAM/src/ebFillGhosts.m",
+      "sha256": "619b6bf1930b71887916e5882b9db1bf45caddb00b8b8914f092b7d7af86d973"
+    },
+    {
+      "path": "EllipticBSAM/src/ebGatherParentCoeffs.m",
+      "sha256": "a983df76083537ad58265090dd7bbd5b3b27944534c7bee26c5d4c167f18618f"
+    },
+    {
+      "path": "EllipticBSAM/src/ebGatherWindow.m",
+      "sha256": "765b17f7eca87296c7e65878811b84b1f97668f7c3495b03a4156506bb5b05d8"
+    },
+    {
+      "path": "EllipticBSAM/src/ebInterpCf.m",
+      "sha256": "fae65a247a026bca9479d4558a840e04f78b46ae7fd95e5ce86a1faff3a0936e"
+    },
+    {
+      "path": "EllipticBSAM/src/ebKernels.m",
+      "sha256": "380fee28f102e6388a0b8f6e28114bb04e2f70783d74ad0871473739024202a2"
+    },
+    {
+      "path": "EllipticBSAM/src/ebMakeLevel.m",
+      "sha256": "36f66c0e2c59375a2df2b241d0af19aaaccc18c20561f67145701d1b65388210"
+    },
+    {
+      "path": "EllipticBSAM/src/ebMassCheck.m",
+      "sha256": "a8738d06f81e265879d5620a9f9c66837ef388d5a56fd780c8a70d1871dfcebe"
+    },
+    {
+      "path": "EllipticBSAM/src/ebOptions.m",
+      "sha256": "5565fecb79d734969dafb8f2c80f4054959492665c87a5bc2d7faa2b723e95a3"
+    },
+    {
+      "path": "EllipticBSAM/src/ebParentCoeffs.m",
+      "sha256": "9468df7bc183b8ad84bb84effd10f30b15985aa788354f41a4f2a2c2f74cc156"
+    },
+    {
+      "path": "EllipticBSAM/src/ebPlot.m",
+      "sha256": "0e000d6f715645dd959a11c81b3a4169a8c9397eaabb0e7e45ff8d18baa7994d"
+    },
+    {
+      "path": "EllipticBSAM/src/ebProblem.m",
+      "sha256": "408f16031d7a215eece18ec934a2b9d3b4663941e8c35beefc277dce9b48bf34"
+    },
+    {
+      "path": "EllipticBSAM/src/ebRelaxLevel.m",
+      "sha256": "6ba25e1da8e27e29f871d8b5c21134022a694cad777d42d6deac45400b0af6d0"
+    },
+    {
+      "path": "EllipticBSAM/src/ebRte.m",
+      "sha256": "a3d0bb4066b3c9704d433f8158f3a4f01166eef80fd37c780fb3e55f45522d16"
+    },
+    {
+      "path": "EllipticBSAM/src/ebSample.m",
+      "sha256": "199d8f755d59d850fdddd639f5f7add9c532d55f57f0a22b36a8e44a5449e7c1"
+    },
+    {
+      "path": "EllipticBSAM/src/ebSetup.m",
+      "sha256": "6defd4aded84c0cf684c8d59f627d78d7d783f955853f0d7aceaa3c8b0587605"
+    },
+    {
+      "path": "EllipticBSAM/src/ebSolve.m",
+      "sha256": "7401a9f532a1b30f2e55789c006bec4c5ffb8f502a4bfcf5c91ae75343f38f90"
+    },
+    {
+      "path": "EllipticBSAM/src/ebSolveCycles.m",
+      "sha256": "02859733b236de441da925bc5543a1bbb0fe6a85331103fa1b50595d32cbb97b"
+    },
+    {
+      "path": "EllipticBSAM/src/ebTagCluster.m",
+      "sha256": "ad4f1241233f1ba0c43b6be6e23ab2fcadd2d18b6cbaed500ff2069255dbda7c"
+    },
+    {
+      "path": "EllipticBSAM/src/ebTransfer.m",
+      "sha256": "2b9ea3b2d83495d62ffbf9e488a1f39fa44437d1d3b42459213db1f665f4321c"
+    },
+    {
+      "path": "EllipticBSAM/src/ebVcycle.m",
+      "sha256": "55fa5f645846fc8335aca398c95f3588d3dee95aa244da97b02052756b3243bc"
+    },
+    {
+      "path": "EllipticBSAM/tests/auditExtras.m",
+      "sha256": "6bfcde5b61a031e67b0deba431bb4cd7421ec15a7893d8c05a909933d5ef4658"
+    },
+    {
+      "path": "EllipticBSAM/tests/mmsCases.m",
+      "sha256": "11d85cce0f29484655f51bc2d9f288202a023487f8d29f6ab50db27a9e0bc6d0"
+    },
+    {
+      "path": "EllipticBSAM/tests/runAllTests.m",
+      "sha256": "eb0b86d4577d57be68f946fc900ea0be1086c49286be153d1fb1a32375eaee0d"
+    },
+    {
+      "path": "EllipticBSAM/tests/smokeAmr.m",
+      "sha256": "6d09eb2bf00f2073ba15958d67e2f406a302f7d88112d0693e2beaeb289bb423"
+    },
+    {
+      "path": "EllipticBSAM/tests/stressInterfaces.m",
+      "sha256": "e37931645fd4060d6aed0b0991752b256aba18b4cc0b763990e04b2774207424"
+    },
+    {
+      "path": "EllipticBSAM/tests/testEbNeumannSemantics.m",
+      "sha256": "2862d2b08504419521d75ff236ea229a11c8695edec1182bc6a58ae319d128c4"
+    },
+    {
+      "path": "EllipticBSAM/tests/testNeumannCompat.m",
+      "sha256": "9818c2787dc2222ff90779b7b9b4e5145f42e721cab76ca2620c9978284c5f33"
+    },
+    {
+      "path": "EllipticBSAM/tests/unitKernels.m",
+      "sha256": "6e36edae42253f068221567ff966ce5cdd0d298f8ea1fa8d541b3e873dc013d5"
+    },
+    {
+      "path": "EllipticBSAMTree/EllipticBSAMTree_Documentation.pdf",
+      "sha256": "bc21eb0cd87c9e58b32a640b10b7fa6135bb28374522c7bd9675d58fbdce8bd4"
+    },
+    {
+      "path": "EllipticBSAMTree/EllipticBSAMTree_Documentation.tex",
+      "sha256": "7062f5316170ab493556431dc9d8b5fb4fc7b408043f36dec8e93d0cee851329"
+    },
+    {
+      "path": "EllipticBSAMTree/README.md",
+      "sha256": "133be6e9abefa4a5ee04c1f62add1f28a4cb49864c79e6481b27d5325a6e4692"
+    },
+    {
+      "path": "EllipticBSAMTree/TEST_REPORT.md",
+      "sha256": "dbbc3a929f047e2c4dfe15507a1640ab1f847cdb615ab8200a40795368282fd0"
+    },
+    {
+      "path": "EllipticBSAMTree/examples/demoTreeBasicUniform.m",
+      "sha256": "c14e3bc6e8d75eaa9d3fd8c922c07183d9a28ee7fd147fc198ef247858ad222c"
+    },
+    {
+      "path": "EllipticBSAMTree/examples/demoTreePoissonAdaptive.m",
+      "sha256": "ba4650e8d7848d5f35a2339467ecfeac9a1d9291b2a0f642b059f7e59842af49"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtAddLevel.m",
+      "sha256": "0854696ec11321060e55c4c556de92d3724db0fa3a1a9ebd535750b986da0b6e"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtBcFold.m",
+      "sha256": "b4be2de4df0ef40b2cb4778d1925815c60f5deeea4c0b0e4896677e07e5a1c2a"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtBuildOps.m",
+      "sha256": "1fbba3a5702210b3ee42f589c33422e70a0fecca8da65b088973665bba426df3"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtCoarseLoad.m",
+      "sha256": "111b3467817f2ad15034692898b199f5e42342f3c458d147bd529c20a115d524"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtCoarsest.m",
+      "sha256": "4caa3b569a97fea9fa84e804abf7bb0a13482c702c5c72dcf4eecb269390cbd7"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtCoeffFilldown.m",
+      "sha256": "629be0967338f70a76505eb827bbbaef4336ffd9e54af2647c22e80628a9fa8e"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtCompResidual.m",
+      "sha256": "7c54d3d30666c53e18ad89cd8e49b5f02fcd469c689a7da0851f15fa951d4564"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtCompatProject.m",
+      "sha256": "7a055d22165a0345286a63c09d98af86746fde8754be26ba645a4d95b5ee0964"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtCompositeMean.m",
+      "sha256": "f701921963af11cce68f70dcd6ad67c5a66c882ca227c9bde4473b354ef57e70"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtErrorNorms.m",
+      "sha256": "d6e3e4099dd02bdacdedd028e9168180e767fada52d1d1979d4d42aeffa0945e"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtFaceCorrections.m",
+      "sha256": "1aa49bb12cc0cc7734ed453813e511f09732a63d903d677d688376e2ea7e897c"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtFillGhosts.m",
+      "sha256": "4e303c84bd234cd201ba55da926d502c65fa1e6c16a0192a20d91de840c9a655"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtGatherParentCoeffs.m",
+      "sha256": "afd50068abc358c1e0d8e840d0b3698aa3b0fd10483ac981cb56970470b1019f"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtGatherWindow.m",
+      "sha256": "b5316a5752ea3f1cd868216145685c6b1fab55207627be7ed27fad04f517c4d4"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtInterpCf.m",
+      "sha256": "5738617c59781f70ad022b2146f96c9c1fde307c3e49e7894cdbaae60cbc90bb"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtKernels.m",
+      "sha256": "e6de991366879a4e2b61335ff2aa31f7c527333367200f3e04f5939b815dcb65"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtMakeLevel.m",
+      "sha256": "76b1a4a723841e314f49938904435b1e63bb487ec746e9fff055f5bd2aa4229e"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtMassCheck.m",
+      "sha256": "2818aed3e0fe192e377f6b251176a571a9ca3f32f461bdc0394397b010c7adb2"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtOptions.m",
+      "sha256": "f85adaa973f4041829c189b69f6eb4f9da6055d83372235eade0314b8e42bc63"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtParentCoeffs.m",
+      "sha256": "1132c12151ae3fff6b7e6355b437d790caa14f92ee278c357caa3401c2947744"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtPlot.m",
+      "sha256": "024565893045e9d00027d23d5ea8e2dc7bbf61029770a1f1c61035d5c9d4828c"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtProblem.m",
+      "sha256": "43ac4c10520f3974aa68396717a79c873fa846c2ff6fc48fdd38d587b6c34097"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtRelaxLevel.m",
+      "sha256": "f74c3f2738cbdb5aeafadeafe3b0797855cf377b7c4332916cb6ab856e6af97d"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtRte.m",
+      "sha256": "c85cd225924c31b6b1590865242be46035ed2bb4f747a5e735eada9a3627e9bf"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtSample.m",
+      "sha256": "24b898d71cbe3013d7e3da2dbbf79e4f74e9384bd487e63d15870050a7bf7057"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtSetup.m",
+      "sha256": "873caa3ead0c1cdb8c55cfba4da1d84ecee7fdec961f64c03c67af221b6a4df5"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtSolve.m",
+      "sha256": "40fed958dc1cfadf78b2c02fbfe62059c21c5df2eb1e38f1573af6f78f5810ab"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtSolveCycles.m",
+      "sha256": "452ae097826f1b09efc336094dfef764b199f31a83f9bf835d77da343935f3ee"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtTagCluster.m",
+      "sha256": "ca5b4be120edb166dac6ad07eb4a8ec0c16fc557488e285f3ac27e5ebe25fd0f"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtTransfer.m",
+      "sha256": "b8f0851aeb258b2b3c1445185ae21a1983856985d81cbf110ea8b636d84e9ebe"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtTreeCheck.m",
+      "sha256": "f8b5e2d86f66bf194e85d8bca2f2eb12c3c800382d5e774da92d4c48aa4bb09b"
+    },
+    {
+      "path": "EllipticBSAMTree/src/ebtVcycle.m",
+      "sha256": "c9cb2616d2c85cb352b850c64441fc0835ee2f4ffe19bb192c4e3d112ae36670"
+    },
+    {
+      "path": "EllipticBSAMTree/tests/mmsCases.m",
+      "sha256": "4640450e5f060160fb1ff99369d92d09181c7f1b900873095a7ac1e2668bd013"
+    },
+    {
+      "path": "EllipticBSAMTree/tests/runAllTreeTests.m",
+      "sha256": "22e35a541ddd15f1b88dc20eae923c03ca360df222940da86c9a30ddf2be2123"
+    },
+    {
+      "path": "EllipticBSAMTree/tests/smokeTreeAmr.m",
+      "sha256": "f1336a57121794cfcffc16e39b8c47127fd760d099540e40d5a3933183356109"
+    },
+    {
+      "path": "EllipticBSAMTree/tests/stressTreeInterfaces.m",
+      "sha256": "11569848e7e8d4bce3359bfc780e59d787cee9a53a53ed356bd6a0a1eea4e99e"
+    },
+    {
+      "path": "EllipticBSAMTree/tests/testEbtNeumannSemantics.m",
+      "sha256": "c728f184e4ea5452f08d400b1b71931dd436c07a084b0f4ab286395e395b0af2"
+    },
+    {
+      "path": "EllipticBSAMTree/tests/unitTreeKernels.m",
+      "sha256": "75f98171c9766fe396999b5fda68fb6f6325421bac43fba73338fe1184e4db16"
+    },
+    {
+      "path": "ParabolicBSAM/README.md",
+      "sha256": "6aee7c1b5a6d7c74aae37b54b75527c43a27dd8257f3639657ce4447329671a9"
+    },
+    {
+      "path": "ParabolicBSAM/TEST_REPORT.md",
+      "sha256": "38880c2ff3a2535e25afbab74441903221baa840976e625528447200e53dda50"
+    },
+    {
+      "path": "ParabolicBSAM/examples/demoHeatMovie.m",
+      "sha256": "e401bc1260006025c8cae8bd4b45bcce77cd937ec476234d0622592b0fc62533"
+    },
+    {
+      "path": "ParabolicBSAM/src/ebpAddpaths.m",
+      "sha256": "bf5e15ae7b5d65ab02c93cb08443ce62b6aa869b1325d9a6d307e36f2164e0d9"
+    },
+    {
+      "path": "ParabolicBSAM/src/ebpEprob.m",
+      "sha256": "bd6bfb44560da00d760e4a397ca0b5eac840301026cd79091622101a60c21132"
+    },
+    {
+      "path": "ParabolicBSAM/src/ebpInit.m",
+      "sha256": "21bebb6959a36e7b39c2dd84f29b5c5c735eb01732ef0a676eb0826090005d0c"
+    },
+    {
+      "path": "ParabolicBSAM/src/ebpOptions.m",
+      "sha256": "ab39562027f9429feb1abf0bd99e78336d0aa7a03a2f9eea45b39a039b45e155"
+    },
+    {
+      "path": "ParabolicBSAM/src/ebpProblem.m",
+      "sha256": "1e71c95304d7af87a1718c8676c2986c131f33b13d8e64600d0e442a47467a40"
+    },
+    {
+      "path": "ParabolicBSAM/src/ebpRegrid.m",
+      "sha256": "06709b05929c4c72a51dbaa3552ac3059c987fbf4e8917ba96e7eadf4d9e7b96"
+    },
+    {
+      "path": "ParabolicBSAM/src/ebpRhs.m",
+      "sha256": "6b2cc785d17bc1106c5d84aaf2ee0f7f2ed9e4a5bb328e310eaa486a45e89c77"
+    },
+    {
+      "path": "ParabolicBSAM/src/ebpSetTime.m",
+      "sha256": "432c7f7580dbb816e756c50d605e9ced3ec3e2006ccc53af3994c5bb02d9dd78"
+    },
+    {
+      "path": "ParabolicBSAM/src/ebpSolve.m",
+      "sha256": "f17d69c73e446c1b0d9b77c691dfefb834c1cdd83036c3b22260fdbd8a0c1ba6"
+    },
+    {
+      "path": "ParabolicBSAM/tests/runParabolicRegressions.m",
+      "sha256": "0f9e9f35b85a3d7d1cd85908cba45783d882b73cba9838dab4ead7bc6b203299"
+    },
+    {
+      "path": "ParabolicBSAM/tests/runParabolicTests.m",
+      "sha256": "0e182eb6b54154361d9fc9e84c5a45f3e430e76d4bb65de1cf4e13ad0db588b2"
+    },
+    {
+      "path": "DiffuseDomainBSAM/README.md",
+      "sha256": "5ff40c830dd5f0a935e947e1d289ca233a50069a63850182a355e622f59b3148"
+    },
+    {
+      "path": "DiffuseDomainBSAM/TEST_REPORT.md",
+      "sha256": "5cabe222edf2aaee84bb9add2c8c8ba9698921eb03dab5faa73f286b785b6530"
+    },
+    {
+      "path": "DiffuseDomainBSAM/docs/ddm_analysis.pdf",
+      "sha256": "6ec4fb6df0500f8cfe680a28e800807c1588aa55420e97135a8646318222278e"
+    },
+    {
+      "path": "DiffuseDomainBSAM/docs/ddm_analysis.tex",
+      "sha256": "8fe236260f73183cf1b4558578202bbd8f451bf5b247031fd9a48050e80ed91b"
+    },
+    {
+      "path": "DiffuseDomainBSAM/examples/demoDiscDirichlet.m",
+      "sha256": "3e85cb0ff3c440559d89d76aa943c3adc535c6c77c05fbb87689f259233132a8"
+    },
+    {
+      "path": "DiffuseDomainBSAM/examples/demoPentagonDirichlet.m",
+      "sha256": "42f4245bdbd76c4b0d906ff932bb5891f0d4c31b64fe9ed12b30b5eb999c2db9"
+    },
+    {
+      "path": "DiffuseDomainBSAM/examples/demoStarNeumann.m",
+      "sha256": "05707a37c64b80780dcd5ca5d2408331b8a62fb6a55d0a7b18261e1c6a92ecf5"
+    },
+    {
+      "path": "DiffuseDomainBSAM/src/ddAddpaths.m",
+      "sha256": "e337d150e12ead81322c1b9e3b4d79fe5e2c8da2405a8ba50decd04b01c1818e"
+    },
+    {
+      "path": "DiffuseDomainBSAM/src/ddErrorInside.m",
+      "sha256": "0930be46b481ec642f346217586165e6ae75f6f5ab10cdd7851d6d13601eb99c"
+    },
+    {
+      "path": "DiffuseDomainBSAM/src/ddGeometry.m",
+      "sha256": "d0a496ffbd56618dec1e4215a1ede61de2fa36e6567722442b0862710c9a8d59"
+    },
+    {
+      "path": "DiffuseDomainBSAM/src/ddProblem.m",
+      "sha256": "bd976b655a239c01e3aae00d5dec1232bf7f9db49165793fbf70b4b00699ad28"
+    },
+    {
+      "path": "DiffuseDomainBSAM/src/ddSolve.m",
+      "sha256": "6a59f43b78942a2b47b58a3484d84c42ee9d54519737aecc67065f2c72ce763c"
+    },
+    {
+      "path": "DiffuseDomainBSAM/src/ddToUniform.m",
+      "sha256": "726db6ed9040f6ad40b4a153e7b61787196eb4d77be7ebe4b1519d8c039fa6ff"
+    },
+    {
+      "path": "DiffuseDomainBSAM/tests/runDdForced.m",
+      "sha256": "4af8df8df0d8faff38823abf241e4a59cf5d7c6425c9e71807d1d10db26ffd50"
+    },
+    {
+      "path": "DiffuseDomainBSAM/tests/runDdGeometries.m",
+      "sha256": "964d6f90cb15d2208665ee9ec73bcace76a941c3e27bf003be484c34be4144a5"
+    },
+    {
+      "path": "DiffuseDomainBSAM/tests/runDdRegressions.m",
+      "sha256": "8cbf9a22ac18bd8fce8ea683b288358553647291e438eb0527ba5f60f8e92ed6"
+    },
+    {
+      "path": "DiffuseDomainBSAM/tests/runDdTests.m",
+      "sha256": "544d3222ec3a563f69ef456ddd7b7e8313e4c0d3938f94711c8e817f82ceb634"
+    }
+  ],
+  "omitted_from_initial_copy": [
+    {
+      "path": "EllipticBSAM/Test.tex",
+      "reason": "Unrelated editor/template draft."
+    },
+    {
+      "path": "EllipticBSAM/convergence_study/convergence_study.pdf",
+      "reason": "Historical generated report; reproducible driver remains in examples."
+    },
+    {
+      "path": "EllipticBSAM/convergence_study/convergence_study.tex",
+      "reason": "Historical generated report; reproducible driver remains in examples."
+    },
+    {
+      "path": "EllipticBSAM/convergence_study/figs/coverage.pdf",
+      "reason": "Historical generated report; reproducible driver remains in examples."
+    },
+    {
+      "path": "EllipticBSAM/convergence_study/figs/levels.pdf",
+      "reason": "Historical generated report; reproducible driver remains in examples."
+    },
+    {
+      "path": "EllipticBSAM/examples/makeChapterFigs.m",
+      "reason": "Dissertation-only driver with external absolute paths."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/LITERATURE_NOTES.md",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/README.md",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/RL_DESIGN.md",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/TRAINING_REPORT.md",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlActionSpec.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlCalibrateProxy.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlErrEstimate.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlEvaluate.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlForcingStats.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlInit.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlNumericProblem.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlObserve.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlParetoSweep.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlPolicy.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlPolicySolve.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlProblemGen.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlRandomEpisode.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlStep.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlTrainCem.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlTrainedPolicy.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlTrainedPolicyBudget.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlTrainedPolicyL025.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlTrainedPolicyL100.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlTrainedPolicyL200.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/rl/ebrlValidateBoxes.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/slides.pdf",
+      "reason": "Unrelated editor/template draft."
+    },
+    {
+      "path": "EllipticBSAMTree/slides.tex",
+      "reason": "Unrelated editor/template draft."
+    },
+    {
+      "path": "EllipticBSAMTree/tests/testRlApi.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAMTree/tests/testRlState.m",
+      "reason": "Optional reinforcement-learning experiments outside this solver collection."
+    },
+    {
+      "path": "EllipticBSAM/Test.pdf",
+      "reason": "Unrelated editor draft or generated editor preview."
+    },
+    {
+      "path": "EllipticBSAM/docs/.TexMacgic/_tmlive_convergence_theory_body.tex",
+      "reason": "Unrelated editor draft or generated editor preview."
+    },
+    {
+      "path": "EllipticBSAM/docs/.TexMacgic/_tmlive_convergence_theory_hook.tex",
+      "reason": "Unrelated editor draft or generated editor preview."
+    },
+    {
+      "path": "EllipticBSAM/docs/.TexMacgic/_tmlive_convergence_theory_src.tex",
+      "reason": "Unrelated editor draft or generated editor preview."
+    }
+  ]
+}

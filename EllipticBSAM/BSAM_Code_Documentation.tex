@@ -1,0 +1,2157 @@
+\documentclass[11pt,oneside,openany]{book}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{newtxmath}
+\usepackage[scaled=0.92]{inconsolata}
+\usepackage{microtype}
+\usepackage[letterpaper,margin=1in,headheight=15pt]{geometry}
+\usepackage{mathtools,bm}
+\usepackage{booktabs,longtable,tabularx,array,multirow}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,shapes.geometric,decorations.pathreplacing,matrix}
+\usepackage[most]{tcolorbox}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\makeatletter
+\renewcommand{\theALG@line}{\thealgorithm.\arabic{ALG@line}}
+\renewcommand{\theHALG@line}{\thealgorithm.\arabic{ALG@line}}
+\makeatother
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\definecolor{bsblue}{HTML}{24557A}
+\definecolor{bslightblue}{HTML}{EAF2F8}
+\definecolor{bsgreen}{HTML}{3A7D44}
+\definecolor{bslightgreen}{HTML}{EDF7EE}
+\definecolor{bsorange}{HTML}{B5651D}
+\definecolor{bslightorange}{HTML}{FFF3E6}
+\definecolor{bsred}{HTML}{A33A3A}
+\definecolor{bsgray}{HTML}{5E6670}
+\definecolor{bslightgray}{HTML}{F3F5F7}
+\definecolor{bsdark}{HTML}{1F2933}
+% Okabe-Ito colour-blind-safe accents (used in the QIF/LIF data-flow figure)
+\definecolor{cbBlue}{HTML}{0072B2}
+\definecolor{cbOrange}{HTML}{E69F00}
+\definecolor{cbPurple}{HTML}{CC79A7}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=bsblue,
+  citecolor=bsgreen,
+  urlcolor=bsorange,
+  pdftitle={BSAM Code Documentation},
+  pdfauthor={Documentation of the supplied MATLAB implementation},
+  pdfsubject={Block-Structured Adaptive Multigrid for variable-coefficient elliptic equations}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small BSAM Code Documentation}
+\fancyhead[R]{\small\nouppercase{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt minus 1pt}
+\emergencystretch=2em
+
+\newcommand{\code}[1]{\textnormal{\texttt{#1}}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Oh}{\Omega_h}
+\newcommand{\Lh}{L_h}
+\newcommand{\Lc}{L_{2h}}
+\newcommand{\vis}{\mathcal{V}}
+\newcommand{\avg}[1]{\left[#1\right]}
+\newcommand{\dd}{\,\mathrm{d}}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\divop}{div}
+
+\newtheorem{invariant}{Implementation invariant}[chapter]
+\newtheorem{remark}{Remark}[chapter]
+\newtheorem{definition}{Definition}[chapter]
+
+\newtcolorbox{keyidea}[1][]{
+  enhanced,breakable,colback=bslightblue,colframe=bsblue,
+  boxrule=0.7pt,arc=1.5mm,left=2mm,right=2mm,top=1.5mm,bottom=1.5mm,
+  title={Key idea},fonttitle=\bfseries,#1}
+\newtcolorbox{codepath}[1][]{
+  enhanced,breakable,colback=bslightgreen,colframe=bsgreen,
+  boxrule=0.7pt,arc=1.5mm,left=2mm,right=2mm,top=1.5mm,bottom=1.5mm,
+  title={Code path},fonttitle=\bfseries,#1}
+\newtcolorbox{cautionbox}[1][]{
+  enhanced,breakable,colback=bslightorange,colframe=bsorange,
+  boxrule=0.7pt,arc=1.5mm,left=2mm,right=2mm,top=1.5mm,bottom=1.5mm,
+  title={Implementation note},fonttitle=\bfseries,#1}
+
+\lstdefinestyle{matlabstyle}{
+  language=Matlab,
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{bsblue}\bfseries,
+  commentstyle=\color{bsgreen!70!black},
+  stringstyle=\color{bsorange!90!black},
+  numbers=left,
+  numberstyle=\scriptsize\color{bsgray},
+  stepnumber=1,
+  numbersep=8pt,
+  frame=single,
+  rulecolor=\color{bsgray!35},
+  backgroundcolor=\color{bslightgray},
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+  tabsize=2,
+  captionpos=b
+}
+\lstset{style=matlabstyle}
+
+\tikzset{
+  flow/.style={draw=bsblue,rounded corners=2pt,fill=bslightblue,align=center,minimum height=8mm,font=\small},
+  aflow/.style={draw=bsgreen,rounded corners=2pt,fill=bslightgreen,align=center,minimum height=8mm,font=\small},
+  diagbox/.style={draw=bsorange,rounded corners=2pt,fill=bslightorange,align=center,minimum height=8mm,font=\small},
+  codebox/.style={draw=bsgray,rounded corners=2pt,fill=bslightgray,align=center,font=\scriptsize\ttfamily,inner sep=4pt},
+  arr/.style={-{Latex[length=2.4mm]},thick,draw=bsdark},
+  darr/.style={{Latex[length=2.4mm]}-{Latex[length=2.4mm]},thick,draw=bsdark},
+  levelbox/.style={draw=bsblue,fill=bslightblue,minimum height=10mm,align=center,font=\small},
+  patchbox/.style={draw=bsred,very thick,fill=bsred!8}
+}
+
+
+\hypersetup{pageanchor=false}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{1.1in}
+{\Huge\bfseries A Block-Structured Adaptive Multigrid (BSAM) Solver\par}
+\vspace{0.25in}
+{\Large Mathematical and Code Documentation for the Supplied MATLAB Implementation\par}
+\vspace{0.7in}
+\begin{tikzpicture}[scale=0.9]
+  \draw[step=0.55cm,bsgray!35,thin] (0,0) grid (6.6,4.4);
+  \draw[patchbox] (2.2,1.1) rectangle (5.5,3.85);
+  \draw[step=0.275cm,bsred!45,thin] (2.2,1.1) grid (5.5,3.85);
+  \node[fill=white,draw=bsblue,rounded corners=2pt,inner sep=5pt] at (3.3,0.25)
+    {$-\nabla\!\cdot(D\nabla u)+Cu=f$};
+  \draw[-{Latex[length=3mm]},very thick,bsorange] (6.9,2.2) -- (8.2,2.2);
+  \node[flow,minimum width=3.1cm] at (10.0,2.2) {FAS V-cycle\\with conservative\\coarse--fine coupling};
+\end{tikzpicture}
+\vfill
+{\large Textbook-style guide for readers with a background in numerical analysis and multigrid methods\par}
+\vspace{0.25in}
+{\large June 2026\par}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+
+\frontmatter
+\chapter*{Preface}
+\addcontentsline{toc}{chapter}{Preface}
+This document explains the supplied MATLAB code as an integrated numerical method, not merely as an API catalog. It develops the cell-centered flux discretization, boundary closures, block-structured hierarchy, transfer operators, adaptive full approximation storage (AFAS) cycle, conservative interface correction, tagging and clustering, diagnostics, and implementation data structures. A dedicated dry-run chapter follows one solve from the bottom direct solve through the first adaptive refinement and the first composite V-cycle. mememememe
+
+The code is an implementation of the mass-conservative adaptive FAS construction associated with Feng, Guo, Lowengrub, and Wise. Paper equation numbers already present in source comments are retained where useful, but the supplied code is treated as the authoritative description of actual behavior. In particular, this guide documents implementation details that are easy to miss in a mathematical presentation: the distinction between sub-root and adaptive levels, precomputed gather/scatter descriptors, exact boundary folding in the smoother, transient parent-coefficient materialization, global red--black parity across patches, and the life cycle of the \code{QC} restriction buffer.
+
+The source uses the prefix \code{eb}; diagnostic messages use the name ``ebsam.'' This guide uses \emph{BSAM} as the project name and \emph{AFAS} for the adaptive full-approximation-storage algorithm.
+
+\paragraph{How to read this document.} Readers who want the overall picture first can go straight to the dry run in \cref{chap:dryrun}, which follows one solve end to end, and then return to \cref{chap:discretization,chap:hierarchy,chap:ghosts,chap:transfer,chap:fas} for the individual components it exercises. Readers who only want to run the solver can start with \cref{chap:userguide}. \Cref{app:notation} collects the translation between the mathematical symbols used here and the code arrays, and is a useful companion throughout.
+
+\tableofcontents
+\listoffigures
+\listofalgorithms
+
+\mainmatter
+
+% =====================================================================
+\chapter{Orientation: What the Solver Does}
+\label{chap:orientation}
+
+\emph{This chapter states the boundary-value problem the solver targets, names the top-level entry points, and introduces the three nested loops and the module map that the rest of the document expands.}
+
+\section{Problem class}
+The solver addresses the scalar, variable-coefficient elliptic boundary-value problem
+\begin{equation}
+  \mathcal{L}u
+  := -\nabla\!\cdot\!\bigl(D(x,y)\nabla u(x,y)\bigr)
+     + C(x,y)u(x,y)
+  = f(x,y),
+  \qquad (x,y)\in\Omega,
+  \label{eq:pde}
+\end{equation}
+on a rectangular domain
+\[
+  \Omega=[a,b]\times[c,d].
+\]
+Each side can independently carry Dirichlet data, $u=g$, or Neumann data,
+\[
+  \frac{\partial u}{\partial n}=g,
+\]
+where $n$ is the \emph{outward} unit normal. The implementation requires $D>0$ at all sampled faces. Nonnegative $C$ is the natural regime for monotonicity and robust point relaxation, although the input routine does not enforce $C\ge 0$.
+
+The spatial discretization is cell-centered and conservative: $D$ is sampled at face midpoints, $C$ and the source are cell-centered, and the diffusion term is written as a difference of face fluxes. Refinement occurs in rectangular patches, with a fixed \emph{refinement ratio} of two between consecutive levels in each direction; the patches themselves may be rectangles of any shape --- the clusterer imposes no aspect-ratio constraint, only a minimum width.
+
+\begin{keyidea}
+The numerical solution is not one rectangular array. It is a \emph{composite field}: every physical location is represented by the finest patch covering it, while coarser values under a fine patch are retained as multigrid state and synchronized by restriction.
+\end{keyidea}
+
+\section{Top-level execution path}
+A typical user creates a problem with \code{ebProblem}, creates options with \code{ebOptions}, and calls \code{ebSolve}. The top-level path is shown in \cref{fig:topcallgraph}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=8mm and 10mm]
+  \node[flow,minimum width=26mm] (solve) {\code{ebSolve}};
+  \node[codebox,below left=of solve,xshift=-10mm] (setup) {ebSetup};
+  \node[codebox,below=of solve] (stage) {ebSolveCycles};
+  \node[codebox,below right=of solve,xshift=10mm] (tag) {ebTagCluster};
+  \node[codebox,below=of tag] (add) {ebAddLevel};
+  \node[codebox,below=of stage] (vcy) {ebVcycle};
+  \node[codebox,below left=of vcy] (relax) {ebRelaxLevel};
+  \node[codebox,below=of vcy] (trans) {ebTransfer};
+  \node[codebox,below right=of vcy] (load) {ebCoarseLoad};
+  \node[codebox,below=of trans] (coarse) {ebCoarsest};
+  \node[diagbox,right=12mm of tag,minimum width=27mm] (diag) {error, mass,\\level summaries};
+
+  \draw[arr] (solve) -- (setup);
+  \draw[arr] (solve) -- (stage);
+  \draw[arr] (solve) -- (tag);
+  \draw[arr] (tag) -- (add);
+  \draw[arr] (add.west) to[bend right=18] node[above,sloped,font=\scriptsize]{re-solve} (stage.east);
+  \draw[arr] (stage) -- (vcy);
+  \draw[arr] (vcy) -- (relax);
+  \draw[arr] (vcy) -- (trans);
+  \draw[arr] (vcy) -- (load);
+  \draw[arr] (vcy) -- (coarse);
+  \draw[arr] (solve) -- (diag);
+
+  \begin{scope}[on background layer]
+    \node[draw=bsgray!50,dashed,rounded corners=3pt,fit=(relax)(trans)(load)(coarse),
+          inner sep=5pt,label={[font=\scriptsize\bfseries]below:V-cycle hot path}] {};
+  \end{scope}
+\end{tikzpicture}
+\caption{Simplified call graph. Geometry-driven tagging builds all requested adaptive levels before the first solve; solution-driven tagging alternates solve, tag, add level, and re-solve.}
+\label{fig:topcallgraph}
+\end{figure}
+
+\section{The three nested loops}
+The code is easiest to understand as three nested loops.
+
+\begin{enumerate}[label=\arabic*.]
+\item \textbf{Adaptive-stage loop.} Solve the current hierarchy, tag the current finest level, append a new level, and solve again. For a geometric user tag function, hierarchy construction precedes the single composite solve.
+\item \textbf{V-cycle loop.} On a fixed hierarchy, repeat V-cycles until the composite infinity-norm residual is below \code{RelTol}$\,\|f\|_\infty$ or \code{MaxVCycles} is reached.
+\item \textbf{Recursive level loop.} A V-cycle pre-smooths, restricts, loads the FAS coarse equation, recursively solves the next coarser level, prolongs a correction, and post-smooths. Level 1 is solved directly.
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small]
+  \draw[draw=bsblue,rounded corners=4pt,fill=bslightblue] (0,0) rectangle (9,5.4);
+  \node[anchor=north,font=\small\bfseries,text=bsblue] at (4.5,5.3) {adaptive-stage loop};
+  \draw[draw=bsgreen,rounded corners=4pt,fill=bslightgreen] (0.8,0.45) rectangle (8.2,4.2);
+  \node[anchor=north,font=\small\bfseries,text=bsgreen!55!black] at (4.5,4.1) {V-cycle loop};
+  \draw[draw=bsorange,rounded corners=4pt,fill=bslightorange] (1.6,0.9) rectangle (7.4,3.05);
+  \node[anchor=north,font=\small\bfseries,text=bsorange] at (4.5,3.0) {recursive level loop};
+  \node[align=center,font=\scriptsize] at (4.5,1.65)
+    {pre-smooth $\to$ restrict $\to$ FAS load\\
+     $\to$ recurse $\to$ prolong $\to$ post-smooth\\[1mm]
+     (direct solve at level~1)};
+\end{tikzpicture}
+\caption{The three nested loops. Each adaptive stage launches a fixed-hierarchy solve; each solve runs many V-cycles; each V-cycle runs the recursive level transition down to the direct bottom solve and back.}
+\label{fig:nestedloops}
+\end{figure}
+
+\section{Source modules by responsibility}
+\Cref{tab:modules} groups the source files by the role they play in a solve; later chapters take up each group in turn.
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{0.20\textwidth}X@{}}
+\toprule
+Responsibility & Principal files \\
+\midrule
+Public interface & \code{ebProblem}, \code{ebOptions}, \code{ebSolve} \\
+Hierarchy construction & \code{ebSetup}, \code{ebMakeLevel}, \code{ebAddLevel}, \code{ebBuildOps} \\
+Discretization kernels & \code{ebKernels}, \code{ebBcFold}, \code{ebCoarsest} \\
+Ghosts and interfaces & \code{ebFillGhosts}, \code{ebInterpCf}, \code{ebFaceCorrections} \\
+Interlevel transfer & \code{ebTransfer}, \code{ebGatherWindow}, \code{ebCoeffFilldown}, \code{ebGatherParentCoeffs}, \code{ebParentCoeffs} \\
+Multigrid control & \code{ebSolveCycles}, \code{ebVcycle}, \code{ebRelaxLevel}, \code{ebCoarseLoad} \\
+Adaptivity & \code{ebTagCluster}, \code{ebRte} \\
+Diagnostics and output & \code{ebCompResidual}, \code{ebCompositeMean}, \code{ebErrorNorms}, \code{ebMassCheck}, \code{ebSample}, \code{ebPlot} \\
+Examples & \code{demoPoissonAdaptive}, \code{demoVisualWalkthrough} \\
+\bottomrule
+\end{tabularx}
+\caption{Functional decomposition of the source tree.}
+\label{tab:modules}
+\end{table}
+
+% =====================================================================
+\chapter{Cell-Centered Discretization}
+\label{chap:discretization}
+
+\emph{This chapter fixes the cell-centered grid, the face-centered coefficient layout, and the conservative flux-form operator that every level shares. These are the building blocks the multigrid and adaptive machinery later move between scales.}
+
+\section{Level grid and cell centers}
+On a level with $n_x\times n_y$ logical cells,
+\[
+  h_x=\frac{b-a}{n_x},\qquad h_y=\frac{d-c}{n_y}.
+\]
+The cell center $(i,j)$ is
+\[
+  x_i=a+\left(i-\tfrac12\right)h_x,
+  \qquad
+  y_j=c+\left(j-\tfrac12\right)h_y.
+\]
+A patch is represented by a global index box
+\[
+  B=[i_{\min},i_{\max},j_{\min},j_{\max}].
+\]
+If $m_x=i_{\max}-i_{\min}+1$ and $m_y=j_{\max}-j_{\min}+1$, the patch solution array has size $(m_x+2)\times(m_y+2)$. Local indices $2{:}m_x+1$ and $2{:}m_y+1$ are interior cells; index 1 and the final index form a one-cell ghost ring.
+
+The local index of global cell $(i,j)$ is
+\[
+  r=i-i_{\min}+2,\qquad s=j-j_{\min}+2.
+\]
+MATLAB's first array dimension is used for the $x$ index and the second for the $y$ index. The code consistently builds coordinate arrays with \code{ndgrid}, not \code{meshgrid}.
+
+\section{Face-centered coefficients}
+For one patch, the stored arrays are
+\begin{align*}
+  \code{DeW\{p\}} &\in\R^{(m_x+1)\times m_y},
+  &D^x_{i+1/2,j}&=D(x_{i+1/2},y_j),\\
+  \code{DnS\{p\}} &\in\R^{m_x\times(m_y+1)},
+  &D^y_{i,j+1/2}&=D(x_i,y_{j+1/2}),\\
+  \code{CC\{p\}} &\in\R^{m_x\times m_y},
+  &C_{ij}&=C(x_i,y_j).
+\end{align*}
+The names \code{DeW} and \code{DnS} refer to diffusivities on east--west and north--south faces. The source is stored in \code{FTrue\{p\}}, while \code{F\{p\}} is a working force that is overwritten during the FAS descent.
+
+\section{Flux-form operator}
+Define the discrete face increments
+\begin{align*}
+  q^x_{i+1/2,j} &= D^x_{i+1/2,j}\bigl(u_{i+1,j}-u_{ij}\bigr),\\
+  q^y_{i,j+1/2} &= D^y_{i,j+1/2}\bigl(u_{i,j+1}-u_{ij}\bigr).
+\end{align*}
+Then the kernel \code{op2d} computes
+\begin{equation}
+  (L_hu)_{ij}
+  =-\frac{q^x_{i+1/2,j}-q^x_{i-1/2,j}}{h_x^2}
+   -\frac{q^y_{i,j+1/2}-q^y_{i,j-1/2}}{h_y^2}
+   +C_{ij}u_{ij}.
+  \label{eq:discreteoperator}
+\end{equation}
+Equivalently, if the physical numerical flux is
+$F^x_{i+1/2,j}=-D^x_{i+1/2,j}(u_{i+1,j}-u_{ij})/h_x$, then the first term is the discrete divergence $(F^x_{i+1/2,j}-F^x_{i-1/2,j})/h_x$.
+
+\begin{lstlisting}[caption={Core operator in \code{ebKernels}.},label={lst:operator}]
+feW = DeW .* (Q(2:mx+2,2:my+1) - Q(1:mx+1,2:my+1));
+fnS = DnS .* (Q(2:mx+1,2:my+2) - Q(2:mx+1,1:my+1));
+L = -(feW(2:mx+1,:) - feW(1:mx,:))/(hx*hx) ...
+    -(fnS(:,2:my+1) - fnS(:,1:my))/(hy*hy) ...
+    + CC .* Q(2:mx+1,2:my+1);
+\end{lstlisting}
+
+For an interior cell, the unfurled diagonal is
+\begin{equation}
+  a_{ij}=
+  \frac{D^x_{i-1/2,j}+D^x_{i+1/2,j}}{h_x^2}
+  +\frac{D^y_{i,j-1/2}+D^y_{i,j+1/2}}{h_y^2}
+  +C_{ij}.
+  \label{eq:diag}
+\end{equation}
+The reciprocal of this quantity is computed by \code{invdiag2d}; physical-boundary modifications are then folded into it by \code{ebBcFold}.
+
+\section{Source representation}
+By default, \code{FTrue\{p\}} contains midpoint values $f(x_i,y_j)$. With \code{SourceQuad}$=n_q>1$, each cell stores a tensor Gauss--Legendre approximation to the \emph{cell average}
+\[
+  \bar f_{ij}=\frac{1}{h_xh_y}\int_{K_{ij}}f(x,y)\dd x\dd y.
+\]
+The nodes and weights are generated by a Golub--Welsch eigenvalue calculation. Cell averages are especially useful in all-Neumann problems because the composite sum of visible-cell sources more accurately represents the continuous source integral.
+
+\section{Operator properties and assumptions}
+For $D>0$, $C\ge 0$, and at least one Dirichlet boundary segment or positive reaction, the continuous problem has the usual coercive elliptic structure. This does not imply that the multidimensional QIF composite matrix is a $Z$-matrix; the explicit stencil in \cref{app:audit} demonstrates a positive off-diagonal entry. With all-Neumann data and $C\equiv0$, constants form a nullspace; the implementation uses a discrete source projection, an augmented mean constraint on the coarsest grid, and an optional composite mean shift after the final solve.
+
+\begin{cautionbox}
+The input routine validates the box domain and boundary types, and level construction checks that sampled face diffusivities are strictly positive. It does not prove coercivity or enforce $C\ge0$. The singular solver projects its sampled source onto discrete compatibility; callers should inspect \code{H.compatibility.sourceShift} because this projection also changes incompatible continuous data.
+\end{cautionbox}
+
+% =====================================================================
+\chapter{Hierarchy, Patches, and the Data Model}
+\label{chap:hierarchy}
+
+\emph{This chapter describes how the single ratio-two level ladder serves two purposes at once---uniform multigrid support below the root, adaptive patches above it---and catalogs the per-level and per-patch fields, including the precomputed communication descriptors that keep the V-cycle fast.}
+
+\section{Sub-root levels versus adaptive levels}
+The hierarchy \code{H.lev\{1..nlev\}} is a single ratio-two ladder, but its levels play two different roles.
+
+\begin{itemize}
+\item Levels $1,\ldots,\code{rootIdx}-1$ are full-domain, uniform \emph{sub-root} grids used only as multigrid coarse levels.
+\item Level \code{rootIdx} is the user-requested root grid \code{BaseCells}.
+\item Levels above \code{rootIdx} are adaptive patch levels appended by \code{ebAddLevel}.
+\end{itemize}
+
+Composite residuals, errors, means, mass balances, plots, and user level summaries start at \code{rootIdx}. Sub-root levels participate in every V-cycle but do not contribute physical degrees of freedom to the composite solution.
+
+For the default \code{BaseCells=[64 64]} and \code{CoarsestCells=16}, \code{ebSetup} constructs $16^2$, $32^2$, and $64^2$ full-domain grids, so \code{rootIdx=3}. A first adaptive level has logical resolution $128^2$, although only its patches are allocated.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=4mm]
+  \node[levelbox,minimum width=72mm] (l1) {level 1: $16\times16$, full domain, direct solve};
+  \node[levelbox,minimum width=82mm,above=of l1] (l2) {level 2: $32\times32$, full domain, sub-root};
+  \node[levelbox,minimum width=92mm,above=of l2,fill=bsblue!18] (l3) {level 3: $64\times64$, root grid (\code{rootIdx})};
+  \node[levelbox,minimum width=102mm,above=of l3,fill=bslightgreen,draw=bsgreen] (l4) {level 4: logical $128\times128$, adaptive patches only};
+  \node[levelbox,minimum width=112mm,above=of l4,fill=bslightgreen,draw=bsgreen] (l5) {level 5: logical $256\times256$, adaptive patches only};
+
+  \draw[arr] (l5.south) -- node[right,font=\scriptsize]{restriction} (l4.north);
+  \draw[arr] (l4.south) -- (l3.north);
+  \draw[arr] (l3.south) -- (l2.north);
+  \draw[arr] (l2.south) -- (l1.north);
+  \draw[-{Latex[length=2.4mm]},thick,bsorange]
+      ($(l1.east)+(8mm,0)$) -- ($(l5.east)+(8mm,0)$)
+      node[midway,right,align=left,font=\scriptsize]{prolonged\\corrections};
+
+  \draw[decorate,decoration={brace,amplitude=5pt},thick,bsgray]
+      ($(l1.west)+(-5mm,5mm)$) -- ($(l2.west)+(-5mm,-5mm)$)
+      node[midway,left=6mm,align=right,font=\scriptsize]{multigrid-only\\levels};
+  \draw[decorate,decoration={brace,amplitude=5pt},thick,bsgreen]
+      ($(l3.west)+(-5mm,-5mm)$) -- ($(l5.west)+(-5mm,5mm)$)
+      node[midway,left=6mm,align=right,font=\scriptsize]{composite\\levels};
+\end{tikzpicture}
+\caption{Uniform sub-root grids and adaptive composite levels share one data structure and one recursive V-cycle.}
+\label{fig:hierarchyladder}
+\end{figure}
+
+\section{How the uniform ladder is selected}
+Starting from \code{BaseCells}, \code{ebSetup} repeatedly halves both dimensions while all of the following hold:
+\begin{enumerate}[label=(\roman*)]
+\item both current dimensions are even;
+\item the current minimum dimension exceeds \code{CoarsestCells};
+\item the next minimum dimension would be at least four.
+\end{enumerate}
+Thus level 1 always has at least four cells in each direction, but it need not equal \code{CoarsestCells} exactly if divisibility prevents further halving.
+
+\section{Patches, coverage, and visible cells}
+Each level stores an array of nonoverlapping rectangular patch boxes. The mask \code{covered\{p\}} marks cells of patch $p$ that are covered by the next finer level. A cell is \emph{visible} if it is not covered:
+\[
+  \chi_{k,p}(i,j)=1-\code{covered\{p\}}(i,j).
+\]
+The composite domain is the disjoint union of visible cells over levels $k=\code{rootIdx},\ldots,\code{nlev}$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.72]
+  \draw[step=0.8cm,bsgray!55,thin] (0,0) grid (8,6.4);
+  \fill[bsgray!18] (2.4,1.6) rectangle (6.4,4.8);
+  \draw[patchbox] (2.4,1.6) rectangle (6.4,4.8);
+  \draw[step=0.4cm,bsred!50,thin] (2.4,1.6) grid (6.4,4.8);
+  \node[font=\small,align=center] at (4.4,3.2) {fine patch\\visible fine cells};
+  \node[font=\small,align=center,fill=white,inner sep=2pt] at (0.9,5.7) {visible\\coarse cells};
+  \node[font=\scriptsize,align=center,fill=white,inner sep=2pt] at (4.4,1.15) {coarse cells beneath the patch remain stored but are covered};
+\end{tikzpicture}
+\caption{Composite visibility. Coarse cells under a fine footprint are retained for FAS and transfer, but are omitted from composite norms and balances.}
+\label{fig:visiblecells}
+\end{figure}
+
+\begin{definition}[Composite inner product]
+For cell arrays $v$ and $w$, the code's composite inner product is represented by
+\[
+  (v,w)_{\mathrm{comp}}
+  =\sum_{k=\code{rootIdx}}^{\code{nlev}}
+    \sum_{p=1}^{n_p(k)}
+    \sum_{(i,j)\in\vis_{k,p}}
+    h_{x,k}h_{y,k}\,v_{k,p,ij}w_{k,p,ij}.
+\]
+\end{definition}
+
+\section{Patch lineage and bookkeeping}
+\label{sec:lineage}
+It is worth being explicit about how the parent--child relationship between levels is stored, because it is \emph{not} a tree. There is no quadtree, octree, or forest-of-octrees, and no spatial index over patches. The hierarchy is a flat cell array of levels \code{H.lev\{1..nlev\}}, and within a level the patches are simply a flat list: \code{lev.box} is an $n_p\times4$ array of integer boxes $[\,i_{\min}\ i_{\max}\ j_{\min}\ j_{\max}\,]$.
+
+Lineage is recorded as \emph{bidirectional adjacency lists of patch indices between consecutive levels only}. For each fine patch $p$ on level $k$, \code{lev.parents\{p\}} is the vector of coarse patch indices on level $k-1$ that its footprint overlaps; symmetrically, \code{H.lev\{k-1\}.children\{q\}} lists the fine patches over coarse patch $q$. \code{ebBuildOps} fills both by a brute-force pairwise rectangle intersection, an $O\!\left(n_p^{\text{coarse}}\,n_p^{\text{fine}}\right)$ scan that is recomputed whenever a level is appended.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[every node/.style={font=\scriptsize},node distance=4mm]
+  \node[patchbox,minimum width=20mm,minimum height=9mm] (q1) at (0,0) {coarse $q{=}1$};
+  \node[patchbox,minimum width=20mm,minimum height=9mm,right=10mm of q1] (q2) {coarse $q{=}2$};
+  \node[draw=bsgreen,fill=bslightgreen,minimum width=16mm,minimum height=8mm] (p1) at (-0.2,2.4) {fine $p{=}1$};
+  \node[draw=bsgreen,fill=bslightgreen,minimum width=16mm,minimum height=8mm,right=6mm of p1] (p2) {fine $p{=}2$};
+  \draw[darr] (p1.south) -- (q1.north);
+  \draw[darr] (p2.south) -- (q1.north);
+  \draw[darr] (p2.south east) -- (q2.north);
+  \node[anchor=west,align=left] at (4.2,2.4)
+    {\code{parents\{1\}=[1]}\\\code{parents\{2\}=[1,2]}};
+  \node[anchor=west,align=left] at (4.2,0)
+    {\code{children\{1\}=[1,2]}\\\code{children\{2\}=[2]}};
+  \node[text=bsgray,fill=white] at (2.0,1.2) {overlap by box intersection};
+\end{tikzpicture}
+\caption{Patch lineage is a pair of adjacency lists between adjacent levels, not a tree. A fine patch may have several parents (here \code{fine 2}), because clustering does not respect parent-patch boundaries.}
+\label{fig:lineage}
+\end{figure}
+
+
+Two points follow from this representation. First, the relation is a general adjacency, not a strict tree: because the clusterer does not respect coarse-patch boundaries, a fine patch can intersect more than one coarse patch, so \code{parents\{p\}} may have length greater than one. The proper-nesting and one-level-interface invariants keep the structure forest-like, but it is never traversed as a tree. Second, only adjacent levels are linked; there is no global ancestor chain, and a jump from level $k$ to level $k+2$ is impossible by construction.
+
+These index vectors are bookkeeping. The data motion that actually runs in the V-cycle is driven by the precomputed gather/scatter descriptors of \cref{tab:ops}, resolved once at build time so the hot path is pure indexed copying: rectangular range descriptors where the region is a box (windows, scatters, coefficient gathers) and grouped linear-index lists where it is irregular (rings, same-level segments, corrections). This flat-array, recompute-on-regrid design is a deliberate fit to serial, block-structured AMR with modest patch counts, and is intentionally simpler than the Morton-ordered tree structures used by large-scale distributed frameworks.
+
+\section{The hierarchy structure \code{H}}
+The entire solver state lives in a single structure \code{H}, whose top-level fields are summarized below; the per-level substructure \code{H.lev\{k\}} is detailed in the next section.
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.25\textwidth}X@{}}
+\toprule
+Field & Meaning \\
+\midrule
+\code{H.prob} & Domain, coefficient/source function handles, boundary data, optional exact solution. \\
+\code{H.opts} & Parsed solver and adaptivity options. \\
+\code{H.K} & Function handles for the operator, inverse diagonal, smoother kernel, restriction, and prolongation. \\
+\code{H.rootIdx} & Index of the root AMR level in the complete multigrid ladder. \\
+\code{H.nlev} & Total number of levels, including sub-root and adaptive levels. \\
+\code{H.lev\{k\}} & Level structure described below. \\
+\code{H.coarsest} & Sparse decomposition, boundary right-hand side, and singularity flag for level 1. \\
+\code{H.stats.stages} & One convergence record for each solve stage. \\
+\bottomrule
+\end{tabularx}
+\caption{Top-level hierarchy fields.}
+\end{table}
+
+\section{Per-level and per-patch fields}
+Each level \code{H.lev\{k\}} carries the following fields. Array shapes are given per patch~$p$, with $m_x,m_y$ the interior patch dimensions; fields written \code{\{p\}} are cell arrays indexed by patch.
+\begin{longtable}{@{}p{0.22\textwidth}p{0.18\textwidth}p{0.52\textwidth}@{}}
+\caption{Principal fields of \code{H.lev\{k\}}.}\label{tab:levfields}\\
+\toprule
+Field & Shape/scope & Meaning \\
+\midrule
+\endfirsthead
+\toprule
+Field & Shape/scope & Meaning \\
+\midrule
+\endhead
+\code{n}, \code{h} & $1\times2$ & Logical grid dimensions and mesh widths. \\
+\code{np}, \code{box} & scalar, $n_p\times4$ & Number of patches and global index boxes. \\
+\code{Q\{p\}} & $(m_x+2)\times(m_y+2)$ & Interior solution plus one ghost layer. \\
+\code{FTrue\{p\}} & $m_x\times m_y$ & Physical source representation for the level. \\
+\code{F\{p\}} & $m_x\times m_y$ & Working FAS force, reset before every V-cycle. \\
+\code{DeW\{p\}} & $(m_x+1)\times m_y$ & Diffusivity on $x$ faces. \\
+\code{DnS\{p\}} & $m_x\times(m_y+1)$ & Diffusivity on $y$ faces. \\
+\code{CC\{p\}} & $m_x\times m_y$ & Reaction coefficient. \\
+\code{InvDiagS\{p\}} & $m_x\times m_y$ & Inverse diagonal after physical-boundary folding. \\
+\code{par0(p)} & scalar & Patch phase that converts local checkerboard indices to global parity. \\
+\code{bc\{p\}} & four records & West, east, south, north codes and sampled boundary data. \\
+\code{faceInternal\{p\}} & four logicals & Whether each patch face is away from the physical boundary. \\
+\code{covered\{p\}} & $m_x\times m_y$ logical & Cells hidden by level $k+1$. \\
+\code{parents\{p\}}, \code{children\{p\}} & index vectors & Patch overlap bookkeeping across adjacent levels. \\
+\code{land\{p\}} & face vectors & Ghost landscape codes: 1 physical, 2 same-level, 3 coarse--fine. \\
+\code{cornerClass\{p\}} & four integers & The same classification for SW, SE, NW, NE corner ghosts. \\
+\code{sameOps\{p\}} & copy descriptors & Precomputed same-level ghost exchange. \\
+\code{ops\{p\}} & descriptor structure & Parent gathers, scatters, correction targets, and coefficient gathers. \\
+\code{QC\{p\}} & $(m_x/2+2)\times(m_y/2+2)$ & Padded parent-scale window whose interior holds restricted fine data. \\
+\code{cfD\{p\}} & four vectors & Parent diffusivities on the coarse--fine interface, used by mass corrections. \\
+\bottomrule
+\end{longtable}
+
+\section{Precomputed communication descriptors}
+\code{ebBuildOps} constructs owner maps temporarily and converts geometry into indexed copy operations. The V-cycle therefore avoids repeated geometric searches.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.20\textwidth}X@{}}
+\toprule
+Descriptor & Operation \\
+\midrule
+\code{ops.ring} & Gather parent \code{Q} values into the one-cell ring of \code{QC}. Physical parent ghosts may be read when the ring crosses the domain boundary. \\
+\code{ops.winrect} & Gather rectangular parent-interior blocks into a complete parent window. \\
+\code{ops.usc} & Scatter a restricted fine solution into padded parent \code{Q} interiors. \\
+\code{ops.fsc} & Scatter FAS coarse loads into unpadded parent \code{F}. \\
+\code{ops.corrW/E/S/N} & Scatter-add interface corrections to parent cells just outside a fine footprint. \\
+\code{ops.pcc/pdew/pdns} & Gather parent $C$, $x$-face $D$, and $y$-face $D$ over a child footprint. \\
+\bottomrule
+\end{tabularx}
+\caption{Per-patch parent/child operation descriptors.}
+\label{tab:ops}
+\end{table}
+
+\begin{invariant}[Ratio-two alignment]
+For every level $k>1$, a fine patch satisfies
+\[
+ i_{\min},j_{\min}\ \text{odd},\qquad i_{\max},j_{\max}\ \text{even}.
+\]
+Consequently its parent footprint has integer limits
+$[(i_{\min}+1)/2,i_{\max}/2,(j_{\min}+1)/2,j_{\max}/2]$, and both fine patch widths are even.
+\end{invariant}
+
+\begin{invariant}[Parent-window coverage]
+The parent level must cover every cell in a child footprint and its one-cell parent ring. \code{ebBuildOps} counts gathered cells and raises a proper-nesting error if the $(m_x/2+2)\times(m_y/2+2)$ window is incomplete.
+\end{invariant}
+
+
+% =====================================================================
+\chapter{Ghost Cells and Boundary Closures}
+\label{chap:ghosts}
+
+\emph{This chapter explains how all geometric coupling---physical boundaries, same-level patch seams, and coarse--fine interfaces---is pushed into a one-cell ghost layer so that a single interior stencil applies everywhere, and how the smoother stays exact at boundary cells.}
+
+\section{Why ghost cells carry the coupling}
+Every patch uses the same five-point operator kernel, including cells next to patch boundaries. All geometric complexity is moved into the ghost layer. Depending on location, a ghost value comes from
+\begin{enumerate}[label=\arabic*.]
+\item interpolation from the parent level at a coarse--fine interface;
+\item direct copying from a same-level sibling patch;
+\item a physical Dirichlet or Neumann closure.
+\end{enumerate}
+This uniform operator/variable ghost split is one of the code's main structural simplifications.
+
+\section{Canonical fill order}
+\code{ebFillGhosts} always applies the three mechanisms in the order
+\[
+  \boxed{\text{coarse--fine interpolation}}
+  \longrightarrow
+  \boxed{\text{same-level exchange}}
+  \longrightarrow
+  \boxed{\text{physical boundary closure}}.
+\]
+The order is deliberate. A patch face may contain both coarse--fine and same-level segments. The coarse--fine formula is first applied across the whole nonphysical face, then sibling data overwrites the segments that have true same-level neighbors. Finally, physical sides and physical corners take precedence.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.78]
+  % interior patch
+  \fill[bslightblue] (1,1) rectangle (7,5);
+  \draw[step=1cm,bsblue!45,thin] (1,1) grid (7,5);
+  \draw[very thick,bsblue] (1,1) rectangle (7,5);
+  % ghost strips
+  \fill[bsred!20] (0,1) rectangle (1,5);
+  \fill[bslightgreen] (7,1) rectangle (8,3);
+  \fill[bsorange!20] (7,3) rectangle (8,5);
+  \fill[bsorange!20] (1,5) rectangle (7,6);
+  \fill[bsred!20] (1,0) rectangle (7,1);
+  \draw[step=1cm,bsgray!55,thin] (0,0) grid (8,6);
+  \draw[very thick,bsblue] (1,1) rectangle (7,5);
+  \node[font=\small] at (4,3) {patch interior};
+  \node[font=\scriptsize,rotate=90] at (0.5,3) {physical};
+  \node[font=\scriptsize,rotate=90] at (7.5,2) {same level};
+  \node[font=\scriptsize,rotate=90] at (7.5,4) {coarse--fine};
+  \node[font=\scriptsize] at (4,5.5) {coarse--fine};
+  \node[font=\scriptsize] at (4,0.5) {physical};
+  \matrix[draw=bsgray!50,below=8mm of current bounding box.south,fill=white,
+          column sep=4mm,row sep=1mm,inner sep=3mm,font=\scriptsize] {
+    \fill[bsred!20] (0,0) rectangle (0.35,0.22); & \node {physical (code 1)}; &
+    \fill[bslightgreen] (0,0) rectangle (0.35,0.22); & \node {same level (code 2)}; &
+    \fill[bsorange!20] (0,0) rectangle (0.35,0.22); & \node {coarse--fine (code 3)}; \\
+  };
+\end{tikzpicture}
+\caption{A schematic ghost landscape. A single face can be split among landscape classes, while \code{faceInternal} only records whether the face is away from the physical boundary.}
+\label{fig:ghostlandscape}
+\end{figure}
+
+\section{Quadratic Dirichlet closure}
+Consider a physical boundary at $x=0$, with a ghost center at $x=-h/2$, the first two interior centers at $x=h/2$ and $x=3h/2$, and boundary value $g=u(0)$. The quadratic interpolant through $g,u_1,u_2$ gives
+\begin{equation}
+  u_g=\frac{8}{3}g-2u_1+\frac{1}{3}u_2.
+  \label{eq:dirghost}
+\end{equation}
+The same formula, with the appropriate orientation, is used on all four sides. Physical corner ghosts are then filled by bilinear-consistent extrapolation, for example
+\[
+ u_{g,SW}=u_{1,gS}+u_{gW,1}-u_{1,1}.
+\]
+
+When \cref{eq:dirghost} is substituted into the boundary-cell equation, the boundary face contributes
+\begin{equation}
+  \frac{D_b}{h^2}\left(3u_1-\frac13u_2-\frac83g\right).
+  \label{eq:dirfold}
+\end{equation}
+The coarsest sparse matrix includes this expression directly.
+
+\section{Neumann closure and sign convention}
+The user supplies the outward normal derivative $g=\partial u/\partial n$. On every side the centered ghost relation is
+\begin{equation}
+  u_g=u_1+h g.
+  \label{eq:neughost}
+\end{equation}
+For example, at the west boundary $n=-e_x$ and
+$(u_g-u_1)/h\approx-u_x=\partial u/\partial n$; at the east boundary the same algebraic formula approximates $u_x$.
+
+Substitution of \cref{eq:neughost} removes the boundary-face unknown coupling and contributes $D_bg/h$ to the right-hand side of the ghost-eliminated equation.
+
+\section{Exact boundary treatment in red--black relaxation}
+A naive smoother would fill the complete ghost formula and then use the ordinary diagonal. That update is not exact Gauss--Seidel for the ghost-eliminated boundary equation because the ghost itself contains the unknown boundary-cell value. The code instead splits the ghost formula into a part independent of $u_1$ and a part proportional to $u_1$.
+
+For a Dirichlet side,
+\[
+ u_g=\underbrace{\frac83g+\frac13u_2}_{\text{written into the ghost}}
+     \underbrace{-2u_1}_{\text{folded into the diagonal}},
+\]
+so \code{ebBcFold} adds $2D_b/h^2$ to the ordinary diagonal. Since the ordinary diagonal already includes $D_b/h^2$, the total boundary-face diagonal becomes $3D_b/h^2$, matching \cref{eq:dirfold}.
+
+For a Neumann side,
+\[
+ u_g=\underbrace{hg}_{\text{written into the ghost}}+\underbrace{u_1}_{\text{folded out}},
+\]
+so \code{ebBcFold} subtracts $D_b/h^2$ and cancels the ordinary boundary-face diagonal.
+
+After every colored pass, \code{ebFillGhosts} restores the complete ghost values needed by the operator and residual kernels.
+
+\begin{keyidea}
+\code{InvDiagS} is not simply the reciprocal of the five-point diagonal near a physical boundary. It is the reciprocal of the \emph{ghost-eliminated} diagonal. This is why point relaxation at boundary cells is algebraically exact for frozen neighbors.
+\end{keyidea}
+
+\section{Coarse--fine interpolation}
+For a fine patch at level $k$, \code{QC\{p\}} is a parent-scale array with one ghost ring. Its ring contains parent values immediately outside the fine footprint. Coarse--fine interpolation uses these parent values together with fine interior values to fill fine ghosts.
+
+It helps to see the data flow as six frames, \cref{fig:qcpipeline}. Throughout, colour marks the \emph{source} of each value: \textcolor{cbBlue}{\textbf{blue}} for fine data, \textcolor{cbOrange}{\textbf{orange}} for parent (coarse) data, and \textcolor{cbPurple}{\textbf{purple}} for the ghost values we must compute; a \emph{white} cell means ``no value stored yet.'' Colour marks the \emph{role} of a value, not the grid level: in particular the purple ghost cells lie on the \emph{same} fine level as the blue interior --- they are the patch's own ghost layer, never a finer patch. \textbf{Watch the scale}: \code{QC} is a \emph{parent-scale} array, so panels (b)--(d) draw it with cells twice the fine size, whereas (a), (e), and (f) are at the fine-mesh scale. Frame~(a) states the goal: fill the fine patch's one-cell \emph{ghost ring} (purple) from the values we already have --- the fine interior (blue) and the surrounding parent cells (orange). The buffer \code{QC} is the workspace; it begins empty (b), gets its interior written by restriction (c), and its ring written by the gather \code{ops.ring} (d). For the ghost fill only the \emph{ring} of \code{QC} matters: \code{ebInterpCf} blends each ring value $u_C$ (coarse, one per $2h$) with two of the patch's \emph{own} fine interior values $u_{F1},u_{F2}$ (fine, spacing $h$). That mismatch of scales is exactly the change in grid density you see between (d) and (e). The kernel does this for every cell of the ring (e), without walking a tree or the \code{parents}/\code{children} lists. (The restricted interior of (c) is \emph{not} used for the ghost fill; it feeds the coarse load of \cref{chap:fas}.) Frame~(f) shows the patch and its ghost ring on the full parent domain --- the ghost ring belonging to the \emph{same} level $k$ as the patch --- with the coarser multigrid levels beneath it given in \cref{fig:hierarchyladder}.
+
+\begin{figure}[p]
+\centering
+\captionsetup{font=scriptsize,skip=2pt}
+\captionsetup[subfigure]{font=scriptsize,skip=1pt}
+\begin{subfigure}{\textwidth}\centering
+\begin{tikzpicture}[scale=0.42,font=\scriptsize]
+
+  \fill[cbOrange!16] (0,0) rectangle (12,10);
+
+  \draw[step=2,cbOrange!45,thin] (0,0) grid (12,10);
+
+  \draw[thick,cbOrange] (0,0) rectangle (12,10);
+
+  \fill[cbPurple!20] (3,3) rectangle (9,9);
+
+  \fill[cbBlue!22] (4,4) rectangle (8,8);
+
+  \draw[step=1,cbPurple!55,thin,densely dashed] (3,3) grid (9,9);
+
+  \draw[step=1,cbBlue!40,thin] (4,4) grid (8,8);
+
+  \draw[very thick,cbPurple,densely dashed] (3,3) rectangle (9,9);
+
+  \draw[very thick,cbBlue] (4,4) rectangle (8,8);
+
+  \node[text=cbBlue!70!black,anchor=west,align=left] at (12.7,8.0) {fine interior:\\\emph{have} (blue)};
+
+  \draw[arr,draw=cbBlue] (12.6,8.0) -- (7.6,6.5);
+
+  \node[text=cbOrange!78!black,anchor=west,align=left] at (12.7,5.0) {parent cells:\\\emph{have} (orange)};
+
+  \draw[arr,draw=cbOrange] (12.6,5.0) -- (10.1,4.4);
+
+  \node[text=cbPurple,anchor=west,align=left] at (12.7,2.0) {ghost ring:\\\emph{need} (purple)};
+
+  \draw[arr,draw=cbPurple] (12.6,2.0) -- (8.6,3.4);
+
+\end{tikzpicture}
+\caption{The goal, on the actual mesh. A fine patch (blue interior) sits on the coarse parent grid (orange); both hold values we already \emph{have}. To apply the operator at the patch edge we must first fill the patch's one-cell \emph{ghost ring} (purple), the values we \emph{need}. Panels (b)--(d) build the helper buffer \code{QC}; (e) fills the whole ring; (f) shows the patch in the hierarchy.}
+\end{subfigure}
+
+\smallskip
+\begin{subfigure}{0.48\textwidth}\centering
+\begin{tikzpicture}[scale=0.4,font=\scriptsize]
+  \fill[white] (0,0) rectangle (8,8);
+  \draw[step=2,bsgray!55,thin] (0,0) grid (8,8);
+  \draw[thick,bsgray] (0,0) rectangle (8,8);
+  \draw[very thick,cbBlue,densely dashed] (2,2) rectangle (6,6);
+  \node[align=center,text=cbBlue] at (4,4) {interior\\(empty)};
+  \node[text=cbOrange!80!black] at (4,7) {ring (empty)};
+  \node[font=\tiny,text=bsgray] at (4,-0.7) {parent scale: cells are $2h$};
+\end{tikzpicture}
+\caption{\code{QC} starts empty (white cells). Its interior will receive fine data (blue), its ring parent data (orange).}
+\end{subfigure}\hfill
+\begin{subfigure}{0.48\textwidth}\centering
+\begin{tikzpicture}[scale=0.4,font=\scriptsize]
+  \fill[cbBlue!20] (-6,1) rectangle (-2,5);
+  \draw[step=1,cbBlue!40,thin] (-6,1) grid (-2,5);
+  \draw[very thick,cbBlue] (-6,1) rectangle (-2,5);
+  \node[text=cbBlue!70!black] at (-4,0.1) {fine $u_h$};
+  \fill[white] (0,0) rectangle (8,8);
+  \fill[cbBlue!35] (2,2) rectangle (6,6);
+  \draw[step=2,bsgray!55,thin] (0,0) grid (8,8);
+  \draw[thick,bsgray] (0,0) rectangle (8,8);
+  \draw[very thick,cbBlue] (2,2) rectangle (6,6);
+  \node[text=cbBlue!70!black] at (4,4) {$Ru_h$};
+  \node[align=center,text=cbOrange!80!black] at (4,7) {ring\\still empty};
+  \draw[arr] (-2,3) to[bend left=12] node[midway,above]{restrict} (2,4);
+\end{tikzpicture}
+\caption{Restriction writes fine 4-cell averages into the interior cells (now blue); the ring is still empty. (This restricted interior feeds the coarse load of \cref{chap:fas}, \emph{not} the ghost fill.)}
+\end{subfigure}
+
+\smallskip
+\begin{subfigure}{0.48\textwidth}\centering
+\begin{tikzpicture}[scale=0.4,font=\scriptsize]
+  \fill[cbOrange!22] (-7,0) rectangle (-3,8);
+  \draw[step=2,cbOrange!45,thin] (-7,0) grid (-3,8);
+  \draw[very thick,cbOrange] (-7,0) rectangle (-3,8);
+  \node[text=cbOrange!75!black] at (-5,-0.9) {parent $u$ (lvl $k{-}1$)};
+  \fill[cbOrange!35] (0,0) rectangle (8,8);
+  \fill[cbBlue!35] (2,2) rectangle (6,6);
+  \draw[step=2,bsgray!55,thin] (0,0) grid (8,8);
+  \draw[thick,bsgray] (0,0) rectangle (8,8);
+  \draw[very thick,cbBlue] (2,2) rectangle (6,6);
+  \node[align=center,text=cbOrange!75!black] at (4,7) {ring\\now filled};
+  \draw[arr] (-3,5) to[bend left=10] node[midway,above]{\code{ops.ring}} (0,6);
+\end{tikzpicture}
+\caption{The gather \code{ops.ring} copies parent values into the ring cells (now orange); the interior keeps its blue data.}
+\end{subfigure}\hfill
+\begin{subfigure}{0.48\textwidth}\centering
+\begin{tikzpicture}[scale=0.42,font=\scriptsize]
+
+  \fill[cbPurple!22] (3,3) rectangle (9,9);
+
+  \fill[cbBlue!18] (4,4) rectangle (8,8);
+
+  \draw[step=1,cbPurple!45,thin] (3,3) grid (9,9);
+
+  \draw[step=1,cbBlue!40,thin] (4,4) grid (8,8);
+
+  \draw[very thick,cbPurple] (3,3) rectangle (9,9);
+
+  \draw[very thick,cbBlue] (4,4) rectangle (8,8);
+
+  % one labelled stencil (west face); geometry matches the QIF detail figure
+
+  \coordinate (C) at (3,5);
+
+  \coordinate (G) at (3.5,5.5);
+
+  \coordinate (F1) at (4.5,6.5);
+
+  \coordinate (F2) at (5.5,7.5);
+
+  \draw[very thick,bsdark!60,densely dotted] (C) -- (F2);
+
+  % coarse ring values: sampled every 2h (sparser)
+
+  \filldraw[cbOrange,draw=bsdark] (3,3) circle (3pt);
+
+  \filldraw[cbOrange,draw=bsdark] (C) circle (3pt);
+
+  \filldraw[cbOrange,draw=bsdark] (3,7) circle (3pt);
+
+  \filldraw[cbPurple,draw=bsdark] (G) circle (2.3pt);
+
+  \filldraw[cbBlue,draw=bsdark] (F1) circle (2.3pt);
+
+  \filldraw[cbBlue,draw=bsdark] (F2) circle (2.3pt);
+
+  \node[anchor=east,align=right,text=cbOrange!78!black] at (2.8,5) {$u_C$\\{\tiny per $2h$}};
+
+  \node[anchor=west,text=cbBlue!70!black] at (5.65,7.5) {$u_{F1}$};
+
+\node[anchor=west,text=cbBlue!70!black] at (4.6,6.4) {$u_{F2}$};
+
+  \node[text=cbPurple] at (3.55,4.8) {$u_g$};
+
+\end{tikzpicture}
+\caption{Filling the \emph{whole} ring, back at the fine scale of (a). Every purple ghost blends one coarse ring value $u_C$ (orange, sampled every $2h$) with two fine interior values (blue, spacing $h$); that two-scale mix is why the orange points are sparser than the blue grid. Per-ghost weights: \cref{fig:qifstencil}.}
+\end{subfigure}
+
+\smallskip
+\begin{subfigure}{\textwidth}\centering
+\begin{tikzpicture}[scale=0.45,font=\scriptsize]
+  \fill[cbOrange!16] (0,0) rectangle (12,10);
+  \draw[step=2,cbOrange!45,thin] (0,0) grid (12,10);
+  \draw[very thick,cbOrange] (0,0) rectangle (12,10);
+  \fill[cbPurple!22] (3,3) rectangle (9,9);
+  \fill[cbBlue!18] (4,4) rectangle (8,8);
+  \draw[step=1,cbPurple!45,thin] (3,3) grid (9,9);
+  \draw[step=1,cbBlue!40,thin] (4,4) grid (8,8);
+  \draw[very thick,cbPurple] (3,3) rectangle (9,9);
+  \draw[very thick,cbBlue] (4,4) rectangle (8,8);
+  \node[text=cbOrange!78!black,anchor=west,align=left] at (12.6,8.6) {level $k{-}1$: parent grid\\(full domain)};
+  \draw[arr,draw=cbOrange] (12.5,8.6) -- (10.7,8.5);
+  \node[text=cbBlue!70!black,anchor=west,align=left] at (12.6,5.8) {level $k$: fine patch};
+  \draw[arr,draw=cbBlue] (12.5,5.8) -- (7.2,6.0);
+  \node[text=cbPurple,anchor=west,align=left] at (12.6,3.4) {its ghost ring\\(\emph{also} level $k$)};
+  \draw[arr,draw=cbPurple] (12.5,3.4) -- (8.6,3.4);
+  \node[text=bsgray,anchor=west,align=left] at (12.6,0.9) {coarser levels below:\\see \cref{fig:hierarchyladder}};
+\end{tikzpicture}
+\caption{The whole view, in the same colours as (a)--(e). The parent grid (orange, level $k{-}1$, full domain) carries the fine patch (blue, level $k$) together with its \emph{ghost ring} (purple). The ghost ring belongs to the \emph{same} level $k$ --- it is the patch's own boundary layer, \emph{not} a finer level. The coarser multigrid levels beneath the parent appear in \cref{fig:hierarchyladder}.}
+\end{subfigure}
+\caption{The QIF/LIF data flow, frame by frame. Colour marks the source of each value: \textcolor{cbBlue}{blue}=fine data, \textcolor{cbOrange}{orange}=parent/coarse data, \textcolor{cbPurple}{purple}=the ghost; a white cell holds no value yet. Frame~(a) states the goal on the mesh (fill the purple ghost ring from the blue and orange values we have). The helper \code{QC} starts empty (b) and is filled from two independent sources --- restriction of fine data into its interior (c) and a gather of parent data into its ring (d). For the ghost fill the kernel reads only that ring (plus the patch's own fine interior) to compute each ghost (e). No lineage vectors or tree traversal are involved. Frame~(f) shows where the dissected patch sits in the overall hierarchy.}
+\label{fig:qcpipeline}
+\end{figure}
+
+\begin{remark}[Why restrict into \code{QC} if ghosts use fine \texorpdfstring{$u_h$}{u\_h}?]
+\label{rem:qc-interior}
+Ghost fill reads only the \emph{ring} of \code{QC} together with the patch's own fine interior~\code{Q}; it never uses the restricted interior~$Ru_h$. That interior is written anyway because \code{QC} is shared parent-scale storage for the whole FAS descent: it supplies $L_{2h}(Ru_h)$ in the coarse load (\cref{chap:fas}), the restricted values at coarse--fine interfaces in the face-balance corrections, and the pre-coarse-solve reference in the correction prolongation (\cref{eq:correction}). Restriction also overwrites the parent~\code{Q} under the footprint.
+\end{remark}
+
+\subsection{Quadratic interpolation (QIF)}
+For a regular face ghost, the QIF stencil lies on a $45^\circ$ line through a diagonally adjacent coarse center $u_C$ and two fine interior values $u_{F1},u_{F2}$:
+\begin{equation}
+  u_g=\frac{8}{15}u_C+\frac23u_{F1}-\frac15u_{F2}.
+  \label{eq:qif}
+\end{equation}
+The geometry and weights are illustrated in \cref{fig:qifstencil}.
+
+At the two end cells of a face, the diagonal stencil would leave the patch. The code first constructs a coarse value at the required tangential station with
+\begin{equation}
+  u_C^*=\frac{5}{32}u_{C,-1}+\frac{15}{16}u_{C,0}-\frac{3}{32}u_{C,1},
+  \label{eq:qifend}
+\end{equation}
+and then uses the normal quadratic formula. A coarse--fine corner ghost uses the diagonal version of \cref{eq:qif}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.88]
+  % coarse grid on left (parent boundaries on even fine-coordinates, so
+  % parent cell centers fall on odd fine-coordinates, e.g. u_C at (-1,1))
+  \foreach \i in {-3,-2,-1}{
+    \foreach \j in {-1,0,1,2}{
+      \draw[bsgray!60] (2*\i,2*\j) rectangle ++(2,2);
+    }
+  }
+  % fine grid on right
+  \foreach \i in {0,1,2,3}{
+    \foreach \j in {-2,-1,0,1,2,3,4,5}{
+      \draw[bsblue!55] (\i,\j) rectangle ++(1,1);
+    }
+  }
+  \draw[very thick,bsdark] (0,-2) -- (0,6);
+  \node[font=\scriptsize,rotate=90,fill=white] at (0.18,5.65) {coarse--fine interface};
+
+  \coordinate (C) at (-1,1);
+  \coordinate (G) at (-0.5,1.5);
+  \coordinate (F1) at (0.5,2.5);
+  \coordinate (F2) at (1.5,3.5);
+  \draw[very thick,bsorange] (C) -- (F2);
+  \filldraw[fill=bsgray!45,draw=bsdark] (C) circle (4.2pt);
+  \filldraw[fill=yellow!70,draw=bsdark] (G) rectangle ++(0.18,0.18);
+  \filldraw[fill=bsblue!45,draw=bsdark] (F1) circle (4.2pt);
+  \filldraw[fill=bsblue!45,draw=bsdark] (F2) circle (4.2pt);
+  \node[font=\small,anchor=e] at ($(C)+(-0.2,0)$) {$u_C\;(8/15)$};
+  \node[font=\small,anchor=e,text=bsorange!80!black] at ($(G)+(-0.2,0.55)$) {$u_g$};
+  \node[font=\small,anchor=west] at ($(F1)+(0.2,0)$) {$u_{F1}\;(2/3)$};
+  \node[font=\small,anchor=west] at ($(F2)+(0.2,0)$) {$u_{F2}\;(-1/5)$};
+  \node[font=\small,align=center] at (-3.8,5.8) {parent grid\\spacing $2h$};
+  \node[font=\small,align=center] at (2.7,5.8) {fine patch\\spacing $h$};
+\end{tikzpicture}
+\caption{The regular QIF coarse--fine ghost stencil. The code rotates and reflects this geometry for all patch faces and corners.}
+\label{fig:qifstencil}
+\end{figure}
+
+\subsection{Linear interpolation (LIF)}
+The LIF option uses
+\begin{equation}
+  u_g=\frac23u_C+\frac23u_{F,\mathrm{same}}-\frac13u_{F,\mathrm{partner}},
+  \label{eq:lif}
+\end{equation}
+with alternating partner rows or columns. It has no special end exception. The corner formula reduces to
+\[
+  u_g=\frac23u_C+\frac13u_{F,\mathrm{diag}}.
+\]
+
+\section{Same-level exchange and global consistency}
+\code{ebBuildOps} records, for every sibling segment, the source patch, source linear indices, and destination ghost indices. \code{ebFillGhosts} then performs indexed copies from sibling interiors. Because the copy occurs after coarse--fine interpolation, a mixed face is handled without branching inside the interpolation kernel.
+
+The smoother uses \emph{global} checkerboard parity. For patch box lower corner $(i_{\min},j_{\min})$, the phase
+\[
+  \code{par0}=\operatorname{mod}(i_{\min}+j_{\min},2)
+\]
+ensures that all patches update the same global color together. Ghost exchange after each color makes a colored pass equivalent to one half-sweep on the union of same-level patches.
+
+\begin{invariant}[Current ghosts]
+Any call that evaluates $L_hu$, computes a residual, restricts an interface state for a mass correction, or smooths a level assumes the relevant ghost values are current. The recursive cycle and solve-stage driver enforce this ordering explicitly.
+\end{invariant}
+
+% =====================================================================
+\chapter{Interlevel Transfer and Coefficient Compatibility}
+\label{chap:transfer}
+
+\emph{This chapter covers the data motion between levels---restriction, the padded parent window, bilinear prolongation---and the coefficient fill-down that makes the coarse operator compatible with the fine one. The distinction between the saved \code{QC} buffer and a freshly gathered parent window~$W$ is central to the FAS correction.}
+
+\section{Restriction}
+The restriction kernel is the conservative four-cell average
+\begin{equation}
+  (R_h^{2h}v)_{IJ}
+  =\frac14\sum_{\alpha=0}^{1}\sum_{\beta=0}^{1}
+    v_{2I-1+\alpha,\,2J-1+\beta}.
+  \label{eq:restriction}
+\end{equation}
+In \code{ebTransfer(...,'restrict')}, the result is written to two places:
+\begin{enumerate}[label=(\alph*)]
+\item the interior of the child patch's \code{QC} array;
+\item the parent \code{Q} cells under the child footprint, through \code{ops.usc}.
+\end{enumerate}
+The second write keeps covered coarse data synchronized with the fine approximation during the FAS descent and during the post-cycle fill-down.
+
+\section{The padded parent window}
+For a child patch of size $m_x\times m_y$, its parent footprint has size
+$c_x=m_x/2$ by $c_y=m_y/2$. Two arrays with this parent geometry appear repeatedly:
+\begin{itemize}
+\item \code{QC}: a persistent/transient $(c_x+2)\times(c_y+2)$ buffer. Its interior is $Ru_h$ after restriction; its ring is gathered from the parent.
+\item $W$: a freshly materialized parent window returned by \code{ebGatherWindow}. It contains the \emph{current} parent solution over both the footprint and its ring.
+\end{itemize}
+
+The distinction is crucial during correction. \code{QC} stores the parent-scale approximation before the recursive coarse solve, whereas $W$ stores the parent solution after that solve.
+
+\section{Bilinear prolongation}
+The prolongation kernel maps a padded coarse array $W$ to $2c_x\times2c_y$ fine values. For the southwest child of a coarse cell $C$, the weights are
+\begin{equation}
+  (PW)_{2I-1,2J-1}
+  =\frac{9}{16}C+\frac{3}{16}W_-+\frac{3}{16}S_-+\frac{1}{16}D_{--},
+  \label{eq:prolong}
+\end{equation}
+with reflected variants for the other three children. The one-cell coarse ring supplies the neighbor values needed at the fine-patch boundary.
+
+During a V-cycle, prolongation acts on a \emph{coarse correction}:
+\begin{equation}
+  u_h\leftarrow u_h+P_h^{2h}\left(W-\code{QC}\right).
+  \label{eq:correction}
+\end{equation}
+During level creation, the same kernel acts directly on the parent solution window to initialize the new fine patch.
+
+\section{Coefficient fill-down}
+Each newly created level initially samples the analytic coefficient functions at its own faces and centers. The hierarchy is then made interlevel-compatible by \code{ebCoeffFilldown}. Wherever a coarse level is covered by a fine patch,
+\begin{align}
+ D^{x,2h}_{I+1/2,J}
+   &=\frac12\left(D^{x,h}_{2I+1/2,2J-1}+D^{x,h}_{2I+1/2,2J}\right),
+   \label{eq:dxfill}\\
+ D^{y,2h}_{I,J+1/2}
+   &=\frac12\left(D^{y,h}_{2I-1,2J+1/2}+D^{y,h}_{2I,2J+1/2}\right),
+   \label{eq:dyfill}\\
+ C^{2h}_{IJ}
+   &=\frac14\sum_{\alpha,\beta=0}^{1}C^h_{2I-1+\alpha,2J-1+\beta}.
+   \label{eq:cfill}
+\end{align}
+Thus a coarse face coefficient is the mean of the two collinear fine faces, while a coarse cell coefficient is the mean of four fine cells. Fill-down proceeds from the finest level to level 1, then every relaxation diagonal is recomputed.
+
+\begin{keyidea}
+The coarse operator used by FAS is not an independently sampled rediscretization under a fine footprint. It is made compatible with the fine operator by coefficient averaging. This same parent operator is used in the coarse load, interface correction, and direct bottom solve.
+\end{keyidea}
+
+\section{Transient parent coefficients}
+A child patch may overlap multiple parent patches. \code{ebGatherParentCoeffs} precomputes rectangular descriptors for parent $C$, $D^x$, and $D^y$. During each coarse load, \code{ebParentCoeffs} materializes the footprint arrays transiently, applies the parent operator, and discards them.
+
+Only the four interface-face diffusivity vectors \code{cfD.W/E/S/N} are stored persistently. This reduces permanent metadata from patch-area storage to patch-perimeter storage while keeping the coarse-load code vectorized.
+
+\section{Transfer modes in \code{ebTransfer}}
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.17\textwidth}p{0.22\textwidth}X@{}}
+\toprule
+Mode & Direction & Effect \\
+\midrule
+\code{restrict} & fine $\to$ parent & Fill \code{QC} interior with $Ru_h$ and overwrite parent \code{Q} under the footprint. \\
+\code{ring} & parent $\to$ \code{QC} & Gather the parent ring around each child footprint. \\
+\code{correct} & parent $\to$ fine & Gather current parent window $W$, form $W-\code{QC}$, prolong, and add to fine interiors. \\
+\code{filldown} & finest $\to$ level 1 & Cascade restriction and parent ghost fills through the entire hierarchy. \\
+\bottomrule
+\end{tabularx}
+\caption{Interlevel data-motion modes.}
+\end{table}
+
+\section{Preconditions on \code{QC}}
+The meaning of \code{QC} depends on where the code is in the cycle:
+\begin{itemize}
+\item coarse--fine ghost interpolation needs only a valid ring;
+\item the FAS coarse load needs both the restricted interior and the gathered ring;
+\item face corrections need the restricted first interior row/column and the gathered ring;
+\item correction needs the unchanged pre-coarse-solve \code{QC} as a reference state.
+\end{itemize}
+The returned solved hierarchy releases \code{QC} arrays to save memory. Internal routines that are called later must rebuild the required state in the same order as the V-cycle: restrict first when an interior is needed, then gather the ring.
+
+% =====================================================================
+\chapter{Adaptive FAS Multigrid and Conservative Interfaces}
+\label{chap:fas}
+
+\emph{This chapter assembles the components into the recursive AFAS V-cycle. It motivates the full-approximation formulation, derives the flux-balance interface correction that makes the composite scheme conservative, and describes the smoother, the direct bottom solve, and the per-cycle force lifecycle.}
+
+\section{Why FAS is used for a linear equation}
+The PDE in this project is linear, so a correction-scheme multigrid method would be possible. The implementation nevertheless uses full approximation storage. On each level it solves for the full approximation $u_k$, and the coarse force is chosen so that restricting an exact fine solution produces a consistent coarse equation. This organization matches the adaptive, conservative formulation and extends naturally to nonlinear problems.
+
+\section{The FAS coarse equation}
+Let $u_h$ and $f_h$ be the current fine approximation and working force. On coarse cells covered by the fine patch, the code forms
+\begin{equation}
+  f_{2h}^{\mathrm{FAS}}
+  =R_h^{2h}\bigl(f_h-L_hu_h\bigr)
+   +L_{2h}\bigl(R_h^{2h}u_h\bigr).
+  \label{eq:fasload}
+\end{equation}
+The first term is the restricted fine residual. The second applies the compatible parent operator to the restricted full approximation stored in the padded \code{QC} array. \code{ops.fsc} scatters the result into the appropriate parent patches. Parent cells outside the footprint retain their physical \code{FTrue} source, except for the interface correction described next.
+
+\section{Why ghost interpolation alone is not conservative}
+Fine ghost interpolation gives the fine operator a well-defined stencil at an interface, but it does not by itself make the coarse flux through one coarse face equal the aggregate flux through the two corresponding fine faces. If the coarse equation outside the fine footprint continues to use its original coarse face flux, summing equations over the composite grid leaves a non-canceling interface term.
+
+The code therefore modifies the \emph{coarse force} in cells immediately outside the fine footprint. The fine equations remain unchanged; the coarse equation is made to see the fine flux.
+
+\section{Flux-balance correction}
+Consider a west face of a fine patch. One coarse interface face corresponds to two fine faces. Write $u^f_{\mathrm{in},1}$ and $u^f_{\mathrm{in},2}$ for the fine interior values, $u^f_{g,1}$ and $u^f_{g,2}$ for their interpolated ghosts, $u^c_{\mathrm{out}}$ for the parent cell outside the footprint, and $[Ru^f]_{\mathrm{in}}$ for the restricted fine value inside. The code adds
+\begin{equation}
+ \mathcal{C}_W
+ =\frac{
+   \displaystyle\sum_{\alpha=1}^{2}
+      D^f_{\alpha}\left(u^f_{\mathrm{in},\alpha}-u^f_{g,\alpha}\right)
+   +D^c\left(u^c_{\mathrm{out}}-[Ru^f]_{\mathrm{in}}\right)
+ }{h_{x,c}^{2}}
+ \label{eq:masscorr}
+\end{equation}
+to the coarse force in the outside cell. East, south, and north formulas are rotations of \cref{eq:masscorr}; south/north use $h_{y,c}^2$.
+
+The sign in the last term removes the coarse operator's old interface contribution while the sum of fine terms inserts the restricted aggregate fine contribution. \code{ebFaceCorrections} evaluates the values, and the precomputed \code{ops.corrW/E/S/N} descriptors scatter-add them to parent force arrays.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.35]
+  % coarse outside cell
+  \draw[very thick,bsgray] (-2,-1) rectangle (0,1);
+  \fill[bsgray!15] (-2,-1) rectangle (0,1);
+  \node[font=\small,align=center] at (-1,0) {$u^c_{\rm out}$\\coarse cell};
+  % fine cells
+  \draw[very thick,bsblue] (0,-1) rectangle (1,0);
+  \draw[very thick,bsblue] (0,0) rectangle (1,1);
+  \fill[bslightblue] (0,-1) rectangle (1,1);
+  \node[font=\scriptsize] at (0.5,-0.5) {$u^f_{\rm in,1}$};
+  \node[font=\scriptsize] at (0.5,0.5) {$u^f_{\rm in,2}$};
+  % ghosts
+  \draw[dashed,bsorange,thick] (-0.5,-1) rectangle (0,0);
+  \draw[dashed,bsorange,thick] (-0.5,0) rectangle (0,1);
+  \node[font=\scriptsize,rotate=90,text=bsorange!80!black] at (-0.25,0) {fine ghosts};
+  % interface
+  \draw[very thick,bsred] (0,-1) -- (0,1);
+  % arrows fine flux
+  \draw[-{Latex[length=2.5mm]},very thick,bsgreen] (0.75,-0.5) -- (-0.2,-0.5);
+  \draw[-{Latex[length=2.5mm]},very thick,bsgreen] (0.75,0.5) -- (-0.2,0.5);
+  \node[font=\scriptsize,text=bsgreen,anchor=west] at (1.3,-0.5) {fine flux 1};
+  \node[font=\scriptsize,text=bsgreen,anchor=west] at (1.3,0.5) {fine flux 2};
+  % coarse old flux
+  \draw[-{Latex[length=2.5mm]},very thick,bsorange] (-1.4,-1.45) -- (-0.1,-1.45);
+  \node[font=\scriptsize,text=bsorange!80!black] at (-0.75,-1.8) {old coarse-face contribution};
+  \node[diagbox,minimum width=43mm,below=14mm of current bounding box.south] (c)
+      {add $\mathcal C$ to the outside coarse force};
+  \draw[arr] (c.north) -- (-1,-1.02);
+\end{tikzpicture}
+\caption{Flux-balance correction at a coarse--fine interface. The coarse equation outside the footprint is altered so its interface term represents the two fine fluxes.}
+\label{fig:masscorrection}
+\end{figure}
+
+\section{Recursive V-cycle}
+The recursive routine is almost a literal transcription of the AFAS algorithm.
+
+\begin{algorithm}[htbp]
+\caption{Recursive adaptive FAS V-cycle, \code{ebVcycle(H,k)}}
+\label{alg:vcycle}
+\begin{algorithmic}[1]
+\If{$k=1$}
+  \State solve the prefactored level-1 system and fill its ghosts
+  \State \Return
+\EndIf
+\State perform \code{NPre} red--black Gauss--Seidel sweeps on level $k$
+\State restrict $u_k$ into \code{QC} and the parent solution under the footprint
+\State fill parent ghosts
+\State gather the parent ring into \code{QC}
+\State build the FAS parent force using \cref{eq:fasload}
+\State add flux-balance corrections using \cref{eq:masscorr}, if enabled
+\State recursively call the V-cycle on level $k-1$
+\State gather the new parent window $W$ and set $u_k\gets u_k+P(W-\code{QC})$
+\State fill level-$k$ ghosts
+\State perform \code{NPost} red--black Gauss--Seidel sweeps on level $k$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=5mm and 16mm]
+  \node[flow,minimum width=38mm] (pre) {pre-smooth level $k$};
+  \node[flow,minimum width=38mm,below=of pre] (res) {restrict $u_k$ to parent\\and \code{QC} interior};
+  \node[flow,minimum width=38mm,below=of res] (ring) {fill parent ghosts\\and gather \code{QC} ring};
+  \node[flow,minimum width=38mm,below=of ring] (load) {FAS coarse load\\+ mass corrections};
+  \node[diagbox,minimum width=38mm,below=of load] (rec) {recurse to $k-1$\\direct solve at $k=1$};
+  \node[aflow,minimum width=38mm,right=35mm of rec] (corr) {prolong $W-\code{QC}$\\and correct $u_k$};
+  \node[aflow,minimum width=38mm,above=of corr] (post) {fill ghosts and\\post-smooth level $k$};
+  \draw[arr] (pre) -- (res);
+  \draw[arr] (res) -- (ring);
+  \draw[arr] (ring) -- (load);
+  \draw[arr] (load) -- (rec);
+  \draw[arr] (rec) -- node[below,font=\scriptsize]{coarse solution changed} (corr);
+  \draw[arr] (corr) -- (post);
+  \draw[arr] (post.north) |- node[pos=0.25,right,font=\scriptsize]{return upward} (pre.east);
+  \node[font=\scriptsize\bfseries,text=bsblue,anchor=east] at ($(pre.west)+(-6mm,0)$) {descent};
+  \node[font=\scriptsize\bfseries,text=bsgreen,anchor=west] at ($(post.east)+(6mm,0)$) {ascent};
+\end{tikzpicture}
+\caption{One recursive level transition in the V-cycle. The saved \code{QC} state makes the FAS correction a difference of full approximations.}
+\label{fig:vcycleflow}
+\end{figure}
+
+Unrolling that recursion across the four-level hierarchy of \cref{chap:dryrun} gives the familiar V schedule of \cref{fig:vschedule}: smoothing sweeps on the way down to the bottom, one direct solve at level~1, and smoothing sweeps on the way back up.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=20mm,y=11mm,
+  sm/.style={circle,draw=bsblue,fill=bslightblue,inner sep=1.8pt},
+  ex/.style={diamond,draw=bsorange,fill=bslightorange,inner sep=2.2pt},
+  lvl/.style={font=\scriptsize,anchor=east}]
+  \foreach \L/\name in {4/{level 4 (finest patch)},3/{level 3 (root)},2/{level 2},1/{level 1 (direct)}}{
+    \draw[bsgray!30] (0.7,\L) -- (6.3,\L);
+    \node[lvl] at (0.6,\L) {\name};
+  }
+  \node[sm] (d4) at (1,4) {}; \node[sm] (d3) at (2,3) {};
+  \node[sm] (d2) at (3,2) {}; \node[ex] (b1) at (3.5,1) {};
+  \node[sm] (u2) at (4,2) {}; \node[sm] (u3) at (5,3) {};
+  \node[sm] (u4) at (6,4) {};
+  \draw[arr] (d4)--(d3)--(d2)--(b1)--(u2)--(u3)--(u4);
+  \node[font=\scriptsize,text=bsblue,above=1mm of d4] {$\nu_{\mathrm{pre}}$ sweeps};
+  \node[font=\scriptsize,text=bsgreen!55!black,above=1mm of u4] {$\nu_{\mathrm{post}}$ sweeps};
+  \node[font=\scriptsize,text=bsorange,below=1.5mm of b1] {exact solve};
+\end{tikzpicture}
+\caption{One composite V-cycle on the levels 1--4 hierarchy. Circles are red--black smoothing sweeps (\code{NPre} descending, \code{NPost} ascending); the diamond is the prefactored direct solve at level~1.}
+\label{fig:vschedule}
+\end{figure}
+
+\section{Red--black Gauss--Seidel smoother}
+For a fixed color, the kernel forms the exact point solution
+\begin{equation}
+ u_{ij}^{*}=\frac{1}{a_{ij}^{S}}
+ \left(
+ f_{ij}
+ +\frac{D^x_{i+1/2,j}}{h_x^2}u_{i+1,j}
+ +\frac{D^x_{i-1/2,j}}{h_x^2}u_{i-1,j}
+ +\frac{D^y_{i,j+1/2}}{h_y^2}u_{i,j+1}
+ +\frac{D^y_{i,j-1/2}}{h_y^2}u_{i,j-1}
+ \right),
+ \label{eq:gsupdate}
+\end{equation}
+where $a_{ij}^{S}$ is the boundary-folded diagonal. The stored value is
+\[
+ u_{ij}\leftarrow\omega u_{ij}^{*}+(1-\omega)u_{ij}.
+\]
+For \code{Omega=1}, this is red--black Gauss--Seidel on ordinary interior and physical-boundary rows. Coarse--fine ghost values are held fixed during a color pass and refreshed afterwards; this is not literal Gauss--Seidel on the fully eliminated QIF composite matrix, whose wider stencil can couple cells of the same color.
+
+\section{The level-1 direct solve}
+\code{ebCoarsest(H,'assemble')} constructs the sparse ghost-eliminated matrix once for the current hierarchy. Internal faces add symmetric two-cell contributions. Physical boundaries are folded using \cref{eq:dirfold} and \cref{eq:neughost}. MATLAB's \code{decomposition} object is stored in \code{H.coarsest.dec}.
+
+When all physical boundaries are Neumann and every sampled reaction coefficient is exactly zero, the code marks the problem singular and factors
+\begin{equation}
+ \begin{bmatrix}
+ A & e\\ e^T & 0
+ \end{bmatrix}
+ \begin{bmatrix}u\\\lambda\end{bmatrix}
+ =\begin{bmatrix}b\\0\end{bmatrix},
+ \qquad e=(1,\ldots,1)^T.
+ \label{eq:kkt}
+\end{equation}
+The final row pins the unweighted mean of the uniform coarsest solution. After the complete adaptive solve, \code{MeanZero='auto'} additionally subtracts the \emph{composite} visible-cell mean from every level.
+
+The direct factorization is rebuilt after every new adaptive level because coefficient fill-down can change the level-1 operator.
+
+\section{One V-cycle as a force lifecycle}
+At the start of every V-cycle, \code{ebSolveCycles} resets every \code{F\{p\}} to \code{FTrue\{p\}}. During descent:
+\begin{itemize}
+\item covered parent cells are overwritten by FAS loads;
+\item adjacent visible parent cells receive correction additions;
+\item all other parent cells keep their true source.
+\end{itemize}
+The next V-cycle begins from a clean source state. This reset is essential because corrections and FAS loads are state-dependent and must not accumulate across cycles.
+
+
+% =====================================================================
+\chapter{Adaptive Refinement}
+\label{chap:adaptivity}
+
+\emph{This chapter describes how new levels are decided and built: the refinement indicators, tag buffering and proper-nesting constraints, the signature-based box clustering, and the mechanics of appending a level to the hierarchy.}
+
+\section{Two refinement workflows}
+\code{ebSolve} supports two stage orderings.
+
+\subsection{Solution-driven indicators}
+For \code{Indicator='ulap'} or \code{'rte'}, the hierarchy evolves as
+\[
+  \text{solve current hierarchy}
+  \longrightarrow \text{tag}
+  \longrightarrow \text{cluster}
+  \longrightarrow \text{add level}
+  \longrightarrow \text{re-solve}.
+\]
+This is repeated until no cells are tagged or the requested number of AMR levels is reached.
+
+\subsection{Geometry-driven indicator}
+For \code{Indicator='fun'}, the user function depends only on cell-center coordinates (and optionally the current AMR level). The code therefore builds all possible levels first and performs one composite solve afterward. This avoids intermediate solves whose only purpose would be to discover geometry already known to the user.
+
+\section{Undivided-Laplacian indicator}
+For each fine-level patch, the code computes the unscaled second differences
+\begin{align*}
+ \delta_x^2u_{ij}&=u_{i+1,j}-2u_{ij}+u_{i-1,j},\\
+ \delta_y^2u_{ij}&=u_{i,j+1}-2u_{ij}+u_{i,j-1},
+\end{align*}
+and tags where
+\begin{equation}
+  \eta_{ij}^{\mathrm{ulap}}
+  =\sqrt{(\delta_x^2u_{ij})^2+(\delta_y^2u_{ij})^2}
+  >C_k.
+  \label{eq:ulap}
+\end{equation}
+Because the differences are not divided by $h^2$, a smooth solution gives $\eta=O(h^2)$. A level-dependent threshold is therefore often scaled by approximately $1/4$ under each factor-two refinement.
+
+\section{Relative truncation-error indicator}
+The alternative \code{'rte'} mode estimates
+\begin{equation}
+  \tau_{2h}=L_{2h}(Ru_h)-R(L_hu_h).
+  \label{eq:rte}
+\end{equation}
+The code constructs a padded $Ru_h$ field by restricting interior values and averaging fine ghost pairs onto a parent-scale ring. It also coarsens $D^x,D^y,C$ using the same averages as coefficient fill-down. The absolute value $|\tau_{2h}|$ is then duplicated onto each corresponding $2\times2$ block of fine cells for tagging.
+
+This is a local indicator rather than a global error estimate. Its purpose is to locate regions where the current discretization is not self-consistent across scales.
+
+\section{User tag function}
+With \code{Indicator='fun'}, \code{TagFunction} can be
+\[
+  \code{@(X,Y) ...}
+  \qquad\text{or}\qquad
+  \code{@(X,Y,L) ...},
+\]
+where $L=1$ denotes the root AMR level and refining level $L$ creates level $L+1$. The return value is converted to a logical array at cell centers.
+
+\section{Buffering and proper nesting}
+All patch-local tags are assembled in a logical mask on the current finest logical grid. The mask is dilated by a square Chebyshev neighborhood of radius \code{TagBuffer}. Buffering keeps features away from the new patch boundary and reduces rapid regridding around moving or sharply localized structures.
+
+Next the code forms the coverage mask of the current finest patch union and erodes it by the full $3\times3$ neighborhood. A cell is allowed for refinement if it and all in-domain eight-neighbors are covered by the current level. Points outside the physical domain count as covered, so a child patch may touch a physical boundary.
+
+\begin{invariant}[One-level interfaces]
+Only the current finest level is tagged, and child footprints are clipped to a one-cell erosion of its coverage. Therefore every new coarse--fine interface separates adjacent levels; the hierarchy never jumps directly from level $k$ to level $k+2$.
+\end{invariant}
+
+\section{Signature-based box clustering}
+The clustering routine is a compact Berger--Rigoutsos-style signature splitter.
+
+\begin{enumerate}[label=\arabic*.]
+\item Tighten the current box around its tagged cells.
+\item Accept it if its fill ratio meets or exceeds \code{MinFillRatio}, or if both widths are already no larger than \code{MinBoxWidth}.
+\item Otherwise form one-dimensional signatures by summing tags along each coordinate.
+\item Prefer a split at a zero-signature hole, choosing the admissible hole nearest the center.
+\item If no hole exists, split at the strongest jump in the discrete second difference of a signature.
+\item If no signature split is admissible, bisect the longest dimension when possible.
+\item Recursively process the two children.
+\end{enumerate}
+
+After clustering, boxes are bisected until they lie completely in the proper-nesting region. The code then tries to grow each box to \code{MinBoxWidth} without leaving the allowed region or overlapping another box. Any remaining one-cell sliver is merged with a nearby box when the union is admissible and compact; otherwise it is dropped with a warning.
+
+\begin{cautionbox}
+\code{MinBoxWidth} is a design target, not an unconditional postcondition in a narrow allowed region. The implementation guarantees that surviving boxes are not one-cell slivers, but a box can remain between two cells and \code{MinBoxWidth}$-1$ cells wide if geometric constraints prevent further growth.
+\end{cautionbox}
+
+\section{Appending a new level}
+Suppose a clustered parent-space box is
+\[
+ B_c=[I_\ell,I_r,J_b,J_t].
+\]
+\code{ebAddLevel} maps it to the aligned fine box
+\begin{equation}
+ B_f=[2I_\ell-1,\,2I_r,\,2J_b-1,\,2J_t].
+ \label{eq:boxrefine}
+\end{equation}
+The new logical level size is twice the parent size. The sequence is then:
+
+\begin{algorithm}[htbp]
+\caption{Adding one adaptive level, \code{ebAddLevel}}
+\label{alg:addlevel}
+\begin{algorithmic}[1]
+\State map parent boxes to aligned fine boxes using \cref{eq:boxrefine}
+\State create new patch arrays and sample $D,C,f$, boundary data, and diagonals
+\State fill coefficients downward through the complete hierarchy
+\State build new parent/child, same-level, gather/scatter, and correction descriptors
+\State rebuild parent coefficient metadata and persistent interface diffusivities
+\State reassemble the level-1 direct factorization
+\State fill parent ghosts
+\For{each new fine patch}
+  \State gather the full padded parent window $W$
+  \State set the fine interior to $PW$
+\EndFor
+\State fill the new level's coarse--fine, sibling, and physical ghosts
+\end{algorithmic}
+\end{algorithm}
+
+\section{The adaptive-stage stopping rule}
+\code{MaxLevels} counts only the root and adaptive levels:
+\[
+  \text{AMR level count}=\code{nlev}-\code{rootIdx}+1.
+\]
+It does not count the uniform sub-root ladder. Refinement also stops early when \code{ebTagCluster} returns no boxes.
+
+% =====================================================================
+\chapter{A Dry Run: From the Bottom Solve to the First Adaptive Level}
+\label{chap:dryrun}
+
+\emph{This chapter follows one concrete solve, array by array, from hierarchy construction and the bottom factorization through the first root V-cycle, the first tagging and refinement, and the first composite V-cycle on the enlarged hierarchy.}
+
+\section{Purpose of the tour}
+This chapter follows actual data movement rather than presenting another abstract algorithm. The running configuration uses
+\[
+ \code{BaseCells=[64 64]},\qquad
+ \code{CoarsestCells=16},\qquad
+ \code{MaxLevels}\ge2,
+\]
+with a solution-driven indicator. The initial hierarchy is
+\[
+ \underbrace{16^2}_{k=1}
+ \longrightarrow
+ \underbrace{32^2}_{k=2}
+ \longrightarrow
+ \underbrace{64^2}_{k=3=\code{rootIdx}}.
+\]
+All three initial levels are full-domain single patches.
+
+To make the first refinement concrete, suppose the root-level clusterer later returns
+\[
+ B_c=[21,36,25,40],
+\]
+a $16\times16$ parent-space box. The child patch is
+\[
+ B_f=[41,72,49,80]
+\]
+on the logical $128^2$ level, has $32\times32$ interior cells, a $34\times34$ padded \code{Q}, and an $18\times18$ parent-scale \code{QC} window. \Cref{fig:dryrunbox} shows this box in place on the root grid.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.08]
+  \fill[bslightblue] (0,0) rectangle (64,64);
+  \draw[bsgray!35,step=4] (0,0) grid (64,64);
+  \fill[bsred!12] (20,24) rectangle (36,40);
+  \draw[step=2,bsred!45,very thin] (20,24) grid (36,40);
+  \draw[patchbox] (20,24) rectangle (36,40);
+  \draw[very thick,bsblue] (0,0) rectangle (64,64);
+  \node[font=\scriptsize,text=bsred!70!black] at (28,32) {$B_c$};
+  \node[font=\scriptsize,anchor=south west] at (0,65.5) {$64\times64$ root (level 3), drawn in $4$-cell blocks};
+\end{tikzpicture}
+\caption{The illustrative first refinement of the dry run. The clustered root box $B_c=[21,36,25,40]$ (sixteen root cells on a side) becomes the level-4 patch $B_f=[41,72,49,80]$ with $32\times32$ fine cells, shown subdivided two-to-one inside the red footprint.}
+\label{fig:dryrunbox}
+\end{figure}
+
+\section{Stage 0: hierarchy construction and bottom factorization}
+\code{ebSetup} first creates the three full-domain levels. It samples coefficients and sources, fills coefficients down from $64^2$ to $32^2$ and $16^2$, builds transfer descriptors between levels 2/1 and 3/2, initializes any user guess, and fills all ghosts.
+
+It then calls
+\[
+  \code{ebCoarsest(H,'assemble')}.
+\]
+At this moment no PDE solve has occurred. The code has only assembled and factored the $16^2$ ghost-eliminated matrix, together with its boundary right-hand side. This factorization is the bottom engine that every later V-cycle will use.
+
+\begin{codepath}
+\code{ebSolve} $\to$ \code{ebSetup} $\to$ \code{ebMakeLevel} $\to$ \code{ebCoeffFilldown} $\to$ \code{ebBuildOps} $\to$ \code{ebFillGhosts} $\to$ \code{ebCoarsest('assemble')}.
+\end{codepath}
+
+\section{Stage 1, first V-cycle: descend from the root}
+The first root solve calls \code{ebSolveCycles}, which measures the root composite residual and then invokes
+\[
+  \code{ebVcycle(H,3)}.
+\]
+Because there is no adaptive level yet, only level 3 is composite-visible. Levels 1 and 2 are purely multigrid support.
+
+\subsection{Level 3 to level 2}
+\begin{enumerate}[label=\arabic*.]
+\item \code{ebRelaxLevel(H,3,NPre)} smooths the $64^2$ root field. Since the level has one full-domain patch, only physical ghosts are involved.
+\item \code{ebTransfer(...,'restrict')} averages every $2\times2$ block into level 2. The entire $32^2$ parent is covered, so its \code{Q} interior becomes $Ru_3$.
+\item Level-2 ghosts are filled. \code{QC} ring data for the level-3 patch is gathered from level 2.
+\item \code{ebCoarseLoad(H,3)} overwrites the full level-2 force with
+$R(f_3-L_3u_3)+L_2(Ru_3)$.
+\end{enumerate}
+There are no coarse cells outside the footprint, because the fine level covers the whole domain. Therefore the interface correction lists are empty on this uniform transition.
+
+\subsection{Level 2 to level 1}
+The same sequence repeats from $32^2$ to $16^2$: pre-smooth, restrict, fill ghosts, gather the ring, and load the complete level-1 FAS force.
+
+\section{The bottom event: direct level-1 solve}
+The recursion reaches \code{ebVcycle(H,1)}, which immediately calls
+\[
+ \code{ebCoarsest(H,'solve')}.
+\]
+The current level-1 working force is not merely the physical $16^2$ source. It is the FAS force produced by the two descent steps. The direct solve applies the prefactored matrix to this current right-hand side, writes the $16^2$ solution into the interior of \code{Q\{1\}}, and refills physical ghosts.
+
+This is the conceptual bottom of the whole solver: all low-frequency error that survived smoothing on the root and intermediate grid has been encoded into the coarsest FAS equation and solved exactly, subject to the mean constraint if necessary.
+
+\section{Ascend from level 1 to the root}
+Returning to level 2, the code gathers the now-updated level-1 window $W_1$, subtracts the saved pre-solve \ensuremath{\mathtt{QC}_{2}}, and bilinearly prolongs the difference:
+\[
+ u_2\leftarrow u_2+P(W_1-\ensuremath{\mathtt{QC}_{2}}).
+\]
+It fills level-2 ghosts and post-smooths. The same operation then corrects level 3 from level 2:
+\[
+ u_3\leftarrow u_3+P(W_2-\ensuremath{\mathtt{QC}_{3}}).
+\]
+After root post-smoothing, the V-cycle returns.
+
+\code{ebSolveCycles} now performs a hierarchy fill-down. Covered coarse data are reset to restrictions of finer data, and parent ghosts are refreshed. On this full-domain ladder, the entire $32^2$ and $16^2$ interiors are synchronized with the levels above. The composite residual is measured only on the $64^2$ root.
+
+This root-stage V-cycle repeats until convergence.
+
+\section{The first tagging pass}
+Once the root stage converges, \code{ebTagCluster} examines level 3. For the illustrative box $B_c$:
+\begin{enumerate}[label=\arabic*.]
+\item the indicator exceeds its threshold in a localized set;
+\item tags are buffered by \code{TagBuffer};
+\item the root coverage is eroded for proper nesting (the full root makes every in-domain root cell admissible);
+\item signature splitting produces $B_c=[21,36,25,40]$.
+\end{enumerate}
+The box is expressed in \emph{root-level cell indices}, not in the future fine-level indices.
+
+\section{Creating level 4}
+\code{ebAddLevel} transforms $B_c$ into $B_f=[41,72,49,80]$ and calls \code{ebMakeLevel} with logical size $128^2$.
+
+The new patch allocates:
+\begin{align*}
+ \code{Q\{p\}}&:34\times34,\\
+ \code{FTrue\{p\}},\code{F\{p\}},\code{CC\{p\}}&:32\times32,\\
+ \code{DeW\{p\}}&:33\times32,\\
+ \code{DnS\{p\}}&:32\times33,\\
+ \code{QC\{p\}}&:18\times18.
+\end{align*}
+
+Next, coefficient fill-down replaces root coefficients under the $16\times16$ parent footprint by averages of the new fine coefficients, then propagates compatible values through the sub-root ladder. Transfer and interface descriptors are built. The root patch's \code{covered} mask becomes true on cells $21{:}36,25{:}40$. The bottom matrix is reassembled because these coefficient changes can reach level 1.
+
+\section{Initializing the new fine patch}
+Before any composite solve, the code fills root ghosts and gathers the $18\times18$ root window
+\[
+ W_3=\text{root values on the }16\times16\text{ footprint plus one parent ring}.
+\]
+The new $32\times32$ fine interior is set to $P W_3$. This is an initial guess, not a conservative synchronization. Finally \code{ebFillGhosts(H,4)} performs QIF or LIF interpolation on coarse--fine segments, same-level exchange if there are multiple new patches, and physical closures if the patch touches the domain boundary.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=5mm and 7mm]
+  \node[diagbox,minimum width=27mm] (a) {factor $A_1$\\at setup};
+  \node[flow,minimum width=27mm,right=of a] (b) {root V-cycle\\descends};
+  \node[diagbox,minimum width=27mm,right=of b] (c) {direct solve\\on level 1};
+  \node[aflow,minimum width=27mm,right=of c] (d) {correct upward\\to root};
+  \node[flow,minimum width=27mm,below=9mm of d] (e) {root solve\\converges};
+  \node[flow,minimum width=27mm,left=of e] (f) {tag, buffer,\\cluster};
+  \node[aflow,minimum width=27mm,left=of f] (g) {append level 4\\and prolong guess};
+  \node[flow,minimum width=27mm,left=of g] (h) {first composite\\V-cycle};
+  \draw[arr] (a) -- (b);
+  \draw[arr] (b) -- (c);
+  \draw[arr] (c) -- (d);
+  \draw[arr] (d) -- (e);
+  \draw[arr] (e) -- (f);
+  \draw[arr] (f) -- (g);
+  \draw[arr] (g) -- (h);
+  \node[font=\scriptsize\bfseries,text=bsorange,above=2mm of c] {bottom event};
+  \node[font=\scriptsize\bfseries,text=bsgreen,below=2mm of g] {first refinement};
+\end{tikzpicture}
+\caption{Chronology of the first solution-driven refinement stage. The first adaptive patch is created only after the root composite solve has converged.}
+\label{fig:dryruntimeline}
+\end{figure}
+
+\section{The first composite V-cycle on levels 1--4}
+The next solve stage calls \code{ebVcycle(H,4)}. This time the first descent step is genuinely adaptive.
+
+\subsection{Pre-smooth the fine patch}
+Level 4 is smoothed with coarse--fine ghosts supplied from level 3. If the new level has several touching patches, shared segments are overwritten by sibling interiors after the interpolation pass.
+
+\subsection{Restrict the fine patch}
+Restriction produces a $16\times16$ array $R u_4$. It is written into the interior of the $18\times18$ \ensuremath{\mathtt{QC}_{4}} buffer and into the root cells $21{:}36,25{:}40$. Root ghosts are then refilled, and the one-cell root ring around the footprint is gathered into \ensuremath{\mathtt{QC}_{4}}.
+
+At this point:
+\begin{itemize}
+\item \ensuremath{\mathtt{QC}_{4}} interior is the pre-coarse-solve $Ru_4$;
+\item \ensuremath{\mathtt{QC}_{4}} ring is the current root solution outside the footprint;
+\item root \code{Q} under the footprint has also been overwritten by $Ru_4$.
+\end{itemize}
+
+\subsection{Load the root FAS equation}
+Inside root cells $21{:}36,25{:}40$, \code{ebCoarseLoad} writes
+\[
+ R(F_4-L_4u_4)+L_3(Ru_4).
+\]
+For every coarse--fine face around the footprint, \code{ebFaceCorrections} computes the sum of two fine face contributions, removes the old root interface contribution, and adds the resulting correction to the root cell just outside the footprint.
+
+Root cells far from the footprint still have \ensuremath{\mathtt{FTrue}_{3}}. Thus the root equation is a composite mixture:
+\begin{center}
+physical source away from the patch, FAS load beneath the patch, and conservative correction beside the interface.
+\end{center}
+\Cref{fig:rootforcemap} maps these three regions on the root grid.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.5]
+  \fill[bslightblue] (0,0) rectangle (10,8);
+  \fill[bsorange!28] (3,2) rectangle (8,7);
+  \fill[bsgreen!22] (4,3) rectangle (7,6);
+  \draw[step=1,bsgray!45,thin] (0,0) grid (10,8);
+  \draw[very thick,bsblue] (0,0) rectangle (10,8);
+  \draw[patchbox] (4,3) rectangle (7,6);
+  \node[font=\scriptsize,align=center] at (5.5,4.5) {FAS load\\(under footprint)};
+  \node[font=\scriptsize,align=center,text=bsorange!75!black] at (1.55,7.6) {conservative\\correction ring};
+  \draw[arr,draw=bsorange] (1.55,7.0) -- (3.4,6.5);
+  \node[font=\scriptsize,align=center] at (8.9,0.7) {physical source\\$F^{\mathrm{True}}$};
+  \draw[arr] (8.9,1.3) -- (8.9,2.5);
+\end{tikzpicture}
+\caption{The composite root force during the first adaptive V-cycle. The FAS load replaces the source under the fine footprint (green), the flux-balance correction is scatter-added in the one-cell ring just outside it (orange), and the original physical source is retained everywhere else.}
+\label{fig:rootforcemap}
+\end{figure}
+
+\subsection{Recurse through root and sub-root levels}
+The cycle now calls \code{ebVcycle(H,3)}. From here the recursion resembles the earlier uniform solve, except that the root force already contains the adaptive coarse load and interface terms. This information is restricted through levels 2 and 1, solved at the bottom, and propagated back to the root.
+
+\subsection{Correct level 4}
+After the recursive root solve, \code{ebTransfer(...,'correct')} gathers the \emph{new} root window $W_3$. The saved \ensuremath{\mathtt{QC}_{4}} still contains the pre-root-solve parent-scale state. Therefore
+\[
+ E_3=W_3-\ensuremath{\mathtt{QC}_{4}}
+\]
+is the root correction over the footprint and its ring. Bilinear prolongation updates the fine interior:
+\[
+ u_4\leftarrow u_4+PE_3.
+\]
+The fine ghosts are refilled and level 4 is post-smoothed.
+
+\subsection{Synchronize and measure}
+After the V-cycle, fill-down restricts level 4 back into the covered root cells and continues through the sub-root ladder. The composite residual is measured on
+\begin{itemize}
+\item visible root cells outside $B_c$;
+\item all visible level-4 cells inside $B_f$.
+\end{itemize}
+Interface corrections are included in the root residual beside the patch. The solve stage repeats V-cycles until the composite residual satisfies the stopping criterion.
+
+\section{State table for the adaptive descent/ascent}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}p{0.53\textwidth}@{}}
+\caption{State of the principal arrays during the level-4/level-3 transition.}\label{tab:dryrunstate}\\
+\toprule
+Moment & Array & Meaning \\
+\midrule
+\endfirsthead
+\toprule
+Moment & Array & Meaning \\
+\midrule
+\endhead
+Before descent & level-4 \code{Q} & Current fine full approximation with current ghosts. \\
+After restriction & level-4 \code{QC} interior & $Ru_4$ saved as the pre-coarse-solve reference. \\
+After restriction & level-3 \code{Q} footprint & Also overwritten with $Ru_4$. \\
+After ring gather & level-4 \code{QC} ring & Current root values just outside the footprint. \\
+After coarse load & level-3 \code{F} footprint & $R(F_4-L_4u_4)+L_3(Ru_4)$. \\
+After correction add & level-3 \code{F} outside ring & Physical source plus conservative interface correction. \\
+After recursive solve & level-3 \code{Q} & New root approximation; covered and visible values may both change. \\
+During ascent & $W_3$ & New root window gathered after the recursive solve. \\
+During ascent & $W_3-\ensuremath{\mathtt{QC}_{4}}$ & Coarse full-approximation correction to prolong. \\
+After post-smooth & level-4 \code{Q} & Updated fine approximation. \\
+After fill-down & level-3 \code{Q} footprint & Resynchronized to $Ru_4$ for a consistent stored hierarchy. \\
+\bottomrule
+\end{longtable}
+
+\section{What changes at a second refinement}
+After the two-level composite stage converges, the indicator is evaluated on level 4 only. The proper-nesting mask is now the one-cell erosion of the level-4 patch union. A level-5 patch can therefore be created only where a complete level-4 neighborhood exists, except at physical boundaries. The same add-level and composite-cycle logic repeats without introducing a new algorithmic case.
+
+
+% =====================================================================
+\chapter{Convergence Control and Diagnostics}
+\label{chap:diagnostics}
+
+\emph{This chapter defines the composite residual that drives the stopping rule, the solve-stage driver, the error and mass-conservation diagnostics, and the sampling/plotting utilities and returned solution structure.}
+
+\section{Composite residual}
+For a visible cell away from an interface, the residual is simply
+\[
+  r_{k,p}=F^{\mathrm{True}}_{k,p}-L_ku_{k,p}.
+\]
+On a coarse visible cell adjacent to a finer patch, the same flux-balance correction used in the FAS coarse force is added to the residual force. This makes \code{ebCompResidual} measure the residual of the conservative composite fixed-point problem, not the residual of independent per-level discretizations.
+
+The reported norms are
+\begin{align}
+ \|r\|_\infty&=\max_{k,p,(i,j)\in\vis_{k,p}}|r_{k,p,ij}|,\\
+ \|r\|_2&=\left(
+   \sum_{k,p}\sum_{(i,j)\in\vis_{k,p}}
+   h_{x,k}h_{y,k}r_{k,p,ij}^2
+ \right)^{1/2}.
+ \label{eq:resnorms}
+\end{align}
+The relative value used for stopping is
+\begin{equation}
+  \code{res.rel}=\frac{\|r\|_\infty}
+  {\max\bigl(\|F^{\mathrm{True}}\|_{\infty,\mathrm{visible}},\mathrm{realmin}\bigr)}.
+  \label{eq:relres}
+\end{equation}
+This is a source-relative tolerance, not a reduction relative to the initial residual.
+
+\section{Solve-stage driver}
+\code{ebSolveCycles} performs the following sequence on the current hierarchy:
+\begin{enumerate}[label=\arabic*.]
+\item fill ghosts on every level;
+\item measure the initial composite residual;
+\item while \code{it < MaxVCycles} and \code{res.rel > RelTol}:
+  \begin{enumerate}[label=(\alph*)]
+  \item reset all working forces to true sources;
+  \item run one V-cycle from the finest level;
+  \item fill down the solution hierarchy;
+  \item measure the composite residual;
+  \end{enumerate}
+\item store the stage history and convergence statistics.
+\end{enumerate}
+
+For residual history $r_0,\ldots,r_m$, the average geometric convergence factor is
+\begin{equation}
+ \rho_{\mathrm{avg}}=
+ \left(\frac{r_m}{\max(r_0,\mathrm{realmin})}\right)^{1/m}.
+ \label{eq:avgfactor}
+\end{equation}
+
+\section{Error norms}
+If an exact solution is supplied, \code{ebErrorNorms} evaluates it at every composite cell center and reports
+\begin{align}
+ \|e\|_\infty&=\max_{\mathrm{visible}}|u_h-u|,\\
+ \|e\|_2&=\left(\sum_{\mathrm{visible}}h_xh_y(u_h-u)^2\right)^{1/2}.
+ \label{eq:errornorms}
+\end{align}
+The structure also contains a per-AMR-level table
+\[
+  [L,\ \|e_L\|_\infty,\ \|e_L\|_2,\ N_{\mathrm{visible},L}].
+\]
+
+For an all-Neumann problem, the solution is defined only up to a constant when $C\equiv0$. Exactly in that singular case, the error routine removes the composite mean of the error for every \code{SourceQuad}. If reaction is present, the absolute error is reported. The removed constant is returned as \code{err.meanShift}; the solution itself is unchanged by this diagnostic. Source quadrature changes the right-hand side, not the operator's nullspace.
+
+\section{Composite mean and final gauge}
+\code{ebCompositeMean} computes
+\begin{equation}
+ \bar u_{\mathrm{comp}}
+ =\frac{\displaystyle\sum_{\mathrm{visible}}h_xh_yu_h}
+        {\displaystyle\sum_{\mathrm{visible}}h_xh_y}.
+ \label{eq:compmean}
+\end{equation}
+With \code{MeanZero='auto'}, \code{ebSolve} subtracts this mean from every patch on every level only when the coarsest operator was classified as singular. A numeric/logical true value forces the shift; false suppresses it.
+
+\section{Discrete mass-conservation check}
+Integrating \cref{eq:pde} over the domain gives
+\[
+ \int_\Omega(Cu-f)\dd x\dd y
+ =\int_{\partial\Omega}D\frac{\partial u}{\partial n}\dd s.
+\]
+The discrete counterpart evaluated by \code{ebMassCheck} is
+\begin{equation}
+ \sum_{\mathrm{visible}}h_xh_y(C_{ij}u_{ij}-F^{\mathrm{True}}_{ij})
+ =\sum_{\partial\Omega}D\,\frac{u_g-u_1}{h_n}\,h_t.
+ \label{eq:massidentity}
+\end{equation}
+Here $h_n$ is the normal spacing and $h_t$ the tangential face length. Covered physical-boundary cells are excluded so that each boundary segment is counted at the finest visible resolution.
+
+The returned fields are \code{lhs}, \code{flux}, \code{defect=lhs-flux}, and a normalized \code{rel}. The check is logically independent of the residual norm:
+\begin{itemize}
+\item a small residual says the algebraic composite equations have been solved;
+\item a small mass defect says the interface construction telescopes correctly when those equations are summed.
+\end{itemize}
+With \code{MassCorrection=false}, the code still solves a defined adaptive discretization, but the interface flux cancellation measured by \cref{eq:massidentity} is not enforced.
+
+\section{Sampling and plotting}
+\code{ebSample} accepts query arrays $(x_q,y_q)$ and searches levels from finest to root. The first patch covering a point supplies a bilinear interpolation from its padded \code{Q} array. Because physical and coarse--fine ghost closures are already present, interpolation remains defined up to patch edges.
+
+\code{ebPlot} has two modes:
+\begin{itemize}
+\item \code{'mesh'} draws patch rectangles colored by AMR level;
+\item \code{'solution'} samples the composite field on a uniform query grid and draws a single surface, avoiding overlapping coarse and fine surfaces.
+\end{itemize}
+
+\section{Returned solution structure}
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.18\textwidth}X@{}}
+\toprule
+Field & Content \\
+\midrule
+\code{sol.H} & Complete hierarchy, including sub-root levels and the final patch state. \\
+\code{sol.stats} & Per-stage V-cycle counts, residual histories, final relative residuals, average factors, visible cells, and allocated AMR cells. \\
+\code{sol.err} & Composite error norms when an exact solution is available; otherwise empty. \\
+\code{sol.mass} & Discrete conservation diagnostic. \\
+\code{sol.levels} & Root/adaptive summaries: logical size, mesh width, patch count, allocated patch cells, and boxes. \\
+\bottomrule
+\end{tabularx}
+\caption{Fields returned by \code{ebSolve}.}
+\end{table}
+
+\begin{cautionbox}
+In \code{sol.levels(L).n}, \code{n} is the full logical resolution of AMR level $L$, even when only a small fraction is allocated. The \code{cells} field is the sum of allocated patch interiors, not the number of visible cells; stage statistics separately report \code{visibleCells}.
+\end{cautionbox}
+
+% =====================================================================
+\chapter{Using the Solver}
+\label{chap:userguide}
+
+\emph{This chapter is the practical guide: a minimal end-to-end workflow, how to define problems and boundary data, how to choose a refinement indicator, the supplied demos, and a table of common interpretation errors.}
+
+\section{Minimal workflow}
+The public workflow is compact:
+
+\begin{lstlisting}[caption={Minimal manufactured-solution workflow.},label={lst:minimal}]
+uex = @(x,y) sin(pi*x).*sin(pi*y);
+f   = @(x,y) (2*pi^2 + 1).*uex(x,y);  % -Delta u + u
+
+prob = ebProblem([0 1 0 1], ...
+                 1, ...                    % D
+                 1, ...                    % C
+                 f, ...
+                 {'dirichlet', 0}, ...
+                 uex);
+
+opts = ebOptions('BaseCells', [64 64], ...
+                 'MaxLevels', 3, ...
+                 'Indicator', 'ulap', ...
+                 'TagThreshold', @(L) 1e-3/4^(L-1), ...
+                 'RelTol', 1e-10);
+
+sol = ebSolve(prob, opts);
+fprintf('Linf error = %.3e\n', sol.err.linf);
+fprintf('mass defect = %.3e\n', sol.mass.rel);
+\end{lstlisting}
+
+\section{Problem definition}
+The signature is
+\[
+ \code{prob = ebProblem(domain,D,C,f,bc,exact)}.
+\]
+\code{domain} is \code{[a b c d]}. The coefficient/source arguments may be scalars or vectorized function handles \code{@(X,Y)} returning arrays of the same size as \code{X} and \code{Y}. A single boundary specification \code{\{'dirichlet',g\}} or \code{\{'neumann',g\}} applies to all sides. Mixed data use a structure with fields \code{west}, \code{east}, \code{south}, and \code{north}.
+
+\begin{lstlisting}[caption={Mixed physical boundary data.}]
+bc.west  = {'dirichlet', @(x,y) 0*x};
+bc.east  = {'neumann',   @(x,y) cos(y)};
+bc.south = {'dirichlet', 1};
+bc.north = {'neumann',   0};
+prob = ebProblem([a b c d], D, C, f, bc);
+\end{lstlisting}
+
+Remember that Neumann $g$ is the \emph{outward} derivative on each side. The solver converts scalar data to arrays automatically.
+
+\section{Choosing a refinement indicator}
+\subsection{Undivided Laplacian}
+Use \code{'ulap'} when sharp curvature is the desired refinement signal. Since the indicator scales like $h^2$ for a smooth function, a threshold function such as
+\[
+  C_L=C_1/4^{L-1}
+\]
+is often more meaningful than a constant threshold.
+
+\subsection{Relative truncation error}
+Use \code{'rte'} when operator self-consistency across adjacent scales is a better signal than raw curvature, especially for variable coefficients. Its magnitude has operator units, so threshold tuning depends on the PDE scale.
+
+\subsection{Geometry function}
+Use \code{'fun'} for prescribed regions, interfaces known analytically, or parameter studies where the mesh should not depend on the current numerical solution. The hierarchy is built before the solve.
+
+\section{Boundary and nullspace cases}
+For pure Neumann data with $C\equiv0$:
+\begin{itemize}
+\item the continuous compatibility relation should be satisfied;
+\item the coarsest solve uses the augmented system \cref{eq:kkt};
+\item \code{MeanZero='auto'} shifts the final composite mean to zero;
+\item \code{SourceQuad>1} can reduce source-integral drift on mixed-resolution meshes.
+\end{itemize}
+For a reaction problem with $C>0$, an all-Neumann boundary condition is nonsingular and the automatic mean shift is not applied.
+
+\section{The supplied adaptive Poisson demo}
+\code{demoPoissonAdaptive} constructs a manufactured solution formed from three narrow Gaussian bumps, sets $D=C=1$, uses exact Dirichlet data, and refines with the undivided-Laplacian indicator. It demonstrates the intended high-level pattern:
+\begin{enumerate}[label=\arabic*.]
+\item define $u_{\mathrm{exact}}$ and derive $f$;
+\item create the problem and adaptive options;
+\item solve and print error/mass diagnostics;
+\item export mesh and composite-solution figures.
+\end{enumerate}
+
+\section{The visual walkthrough demo}
+\code{demoVisualWalkthrough} is an executable narrative. It manually exposes setup, root solve, indicator, tags, clustered boxes, level addition, QIF stencil anatomy, composite re-solve, error map, and final statistics. In desktop MATLAB it behaves like a slideshow; it also exports individual frames, a GIF, and an MP4.
+
+\section{Practical option guidance}
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}X@{}}
+\toprule
+Goal & Suggested starting choice \\
+\midrule
+Robust default interface & \code{GhostInterp='qif'}, \code{MassCorrection=true}. \\
+Cheaper interface experiment & \code{GhostInterp='lif'} while retaining mass correction. \\
+Classical V-cycle balance & \code{NPre=3}, \code{NPost=3}, \code{Omega=1}. \\
+Sharp localized features & \code{Indicator='ulap'} with level-scaled threshold and a 2--3 cell buffer. \\
+Coefficient-driven difficulty & Try \code{Indicator='rte'}. \\
+Known refinement geometry & \code{Indicator='fun'} to avoid intermediate solves. \\
+Pure Neumann accuracy study & Keep \code{MeanZero='auto'} and consider \code{SourceQuad=2} or higher. \\
+Conservation study & Compare \code{MassCorrection=true/false} and inspect \code{sol.mass.rel}. \\
+\bottomrule
+\end{tabularx}
+\caption{Reasonable initial choices for common goals. Thresholds remain problem-dependent.}
+\end{table}
+
+\section{Common interpretation errors}
+\begin{enumerate}[label=\arabic*.]
+\item \textbf{``Level 1'' is not the root.} It is the bottom full-domain grid. AMR level 1 is \code{H.rootIdx}.
+\item \textbf{\code{MaxLevels} does not count sub-root levels.} It counts root plus adaptive levels.
+\item \textbf{A converged residual is not a discretization error estimate.} Tagging and manufactured-solution norms address spatial resolution.
+\item \textbf{Fine ghost interpolation and conservation correction are separate.} Disabling \code{MassCorrection} does not disable QIF/LIF.
+\item \textbf{Covered coarse cells are not additional composite unknowns.} They are synchronization and multigrid state.
+\item \textbf{The \code{ulap} indicator is unscaled.} A constant threshold changes meaning with $h$.
+\end{enumerate}
+
+% =====================================================================
+\chapter{Implementation Architecture and Extension Points}
+\label{chap:architecture}
+
+\emph{This chapter steps back to the engineering view: how the hot path is kept cheap, the cost and memory model, where to extend the solver safely, and a checklist of invariants and symptom-driven debugging hints.}
+
+\section{Hot-path design}
+The source is organized so that geometry-heavy work happens when a level is built, while a V-cycle consists mostly of array kernels and indexed copies.
+
+\begin{itemize}
+\item Owner maps are temporary in \code{ebBuildOps}; per-cell geometric searches are not repeated during smoothing or transfer.
+\item Parent window interiors use rectangular slice descriptors; irregular rings use grouped linear-index gathers.
+\item Same-level ghost exchange is pre-resolved by source patch.
+\item Interface correction destinations are pre-resolved and only values are recomputed.
+\item Parent coefficient footprint arrays are materialized only during a coarse load.
+\item The working source initially shares MATLAB's copy-on-write buffer with the true source.
+\end{itemize}
+
+\section{Computational cost}
+Let $N_{\mathrm{alloc}}$ be the total number of allocated patch cells over all levels participating in a V-cycle. Operator application, smoothing, restriction, prolongation, and coarse loading are $O(N_{\mathrm{alloc}})$ per cycle. Ghost and interface metadata scale primarily with patch perimeter, although same-level copies and full-window gathers still touch the data they move.
+
+The level-1 sparse factorization is a setup cost. It is reused over all V-cycles on a fixed hierarchy and rebuilt after every \code{ebAddLevel} (coefficient fill-down can change the level-1 operator). The direct solve cost is small when \code{CoarsestCells} is chosen appropriately.
+
+\section{Memory lifecycle}
+Large persistent arrays are \code{Q}, \code{FTrue}, \code{F}, face coefficients, reaction coefficients, and smoother diagonals. The principal temporary or releasable objects are:
+\begin{itemize}
+\item \code{QC}, one parent-scale window per non-bottom patch, released at the end of \code{ebSolve};
+\item transient parent coefficient arrays in \code{ebParentCoeffs};
+\item patch-local residual arrays in \code{ebCompResidual}, created, normed, and discarded one patch at a time;
+\item correction chunks, which are perimeter-sized.
+\end{itemize}
+
+\section{Extension points}
+\subsection{New local operator}
+The operator, inverse diagonal, point update, restriction, and prolongation are centralized in \code{ebKernels}. A new scalar elliptic stencil can often be introduced there, provided all boundary folding, coarsest assembly, coefficient compatibility, and interface correction formulas are updated consistently.
+
+\subsection{New indicator}
+A new indicator belongs in the switch in \code{ebTagCluster}. It should return one value per current-finest-level cell and must respect filled ghost data if it uses a stencil. The existing clustering and proper-nesting machinery can remain unchanged.
+
+\subsection{New boundary type}
+Adding Robin or periodic boundaries is not a local change. It requires coordinated updates to problem parsing, level boundary metadata, ghost filling, smoother diagonal folding, coarsest assembly, proper-nesting/ring handling at the domain edge, and mass diagnostics.
+
+\subsection{Different refinement ratio}
+The ratio two is embedded in box alignment, restriction, prolongation weights, \code{QC} dimensions, coefficient averaging, face pairing in the mass correction, RTE upsampling, and clustering-to-child mapping. Generalizing the ratio requires a systematic rewrite of those components.
+
+\section{Implementation invariants checklist}
+\begin{enumerate}[label=\arabic*.]
+\item Every fine patch is parent-aligned and has even interior dimensions.
+\item Fine patches are nonoverlapping within a level.
+\item A child footprint plus its one-parent-cell ring is covered by the parent level.
+\item Coarse/fine interfaces separate adjacent levels only.
+\item Face diffusivities are strictly positive.
+\item Ghosts are current before any operator or smoother call.
+\item \code{QC} interior is restricted fine data before a coarse load or face correction.
+\item Working forces are reset before every V-cycle.
+\item Global checkerboard parity is used across all patches of a level.
+\item Composite sums include visible cells from root to finest and exclude sub-root grids.
+\end{enumerate}
+
+\section{Debugging by symptom}
+\begin{longtable}{@{}p{0.28\textwidth}p{0.62\textwidth}@{}}
+\caption{Useful first checks when behavior is unexpected.}\label{tab:debug}\\
+\toprule
+Symptom & First checks \\
+\midrule
+\endfirsthead
+\toprule
+Symptom & First checks \\
+\midrule
+\endhead
+Patch alignment error & Verify boxes are supplied in parent index space to \code{ebAddLevel}; do not pass already-refined indices. \\
+Parent window not fully covered & Check proper nesting, level jumps, and any manually constructed patches. \\
+Wrong Neumann sign & Confirm that the supplied data are the outward derivative, not a fixed Cartesian derivative. \\
+Divergence near physical boundaries & Check boundary data vectorization and consistency of \code{ebBcFold}/coarsest formulas after any stencil modification. \\
+Divergence across patch seams & Inspect same-level ownership, global parity, and ghost refresh after each color. \\
+Small residual but large mass defect & Confirm \code{MassCorrection=true}; inspect interface coefficient fill-down and face correction signs. \\
+Unexpectedly many patches & Increase \code{MinFillRatio}, \code{MinBoxWidth}, or adjust the tag threshold/buffer. \\
+No refinement & Inspect indicator magnitude and remember that \code{ulap} is $O(h^2)$ for smooth fields. \\
+Pure-Neumann offset & Check compatibility, \code{MeanZero}, and source cell averaging. \\
+Incorrect post-solve internal residual call & Reconstruct restriction buffers in cycle order before using routines that require \code{QC} interiors. \\
+\bottomrule
+\end{longtable}
+
+\section{Current scope and limitations}
+The supplied implementation is deliberately focused:
+\begin{itemize}
+\item two spatial dimensions;
+\item rectangular Cartesian domain;
+\item scalar positive diffusion $D(x,y)$, not a tensor;
+\item scalar reaction $C(x,y)$;
+\item Dirichlet and outward-Neumann data, no Robin or periodic boundary type;
+\item fixed factor-two refinement;
+\item one ghost layer;
+\item serial MATLAB patch loops;
+\item rectangular Berger--Rigoutsos-style patches;
+\item one direct full-domain bottom solve.
+\end{itemize}
+These constraints are also the reason the implementation can keep the numerical kernels compact and the interface geometry explicit.
+
+% =====================================================================
+\appendix
+\chapter{Complete Option Reference}
+\label{app:options}
+
+\small
+\begin{longtable}{@{}p{0.18\textwidth}p{0.16\textwidth}p{0.58\textwidth}@{}}
+\caption{Options parsed by \code{ebOptions}.}\label{tab:options}\\
+\toprule
+Name & Default & Meaning \\
+\midrule
+\endfirsthead
+\toprule
+Name & Default & Meaning \\
+\midrule
+\endhead
+\code{BaseCells} & \code{[64 64]} & Root-grid logical dimensions. A scalar is duplicated. Values are rounded; further validation occurs during hierarchy construction. \\
+\code{MaxLevels} & \code{1} & Number of AMR levels including the root; sub-root grids are excluded. \\
+\code{CoarsestCells} & \code{16} & Target stopping size for uniform sub-root coarsening, subject to even divisibility and a minimum next size of four. \\
+\code{GhostInterp} & \code{'qif'} & \code{'qif'} for quadratic or \code{'lif'} for linear coarse--fine ghost interpolation. \\
+\code{MassCorrection} & \code{true} & Add flux-balance corrections to coarse forces and composite residuals. \\
+\code{NPre} & \code{3} & Red--black Gauss--Seidel sweeps before coarse transfer. \\
+\code{NPost} & \code{3} & Red--black Gauss--Seidel sweeps after prolongated correction. \\
+\code{Omega} & \code{1.0} & Relaxation factor in the colored point update. \\
+\code{MaxVCycles} & \code{60} & Maximum V-cycles per fixed-hierarchy solve stage. \\
+\code{RelTol} & \code{1e-9} & Stop when the composite residual satisfies \cref{eq:relres}. \\
+\code{Indicator} & \code{'ulap'} & \code{'ulap'}, \code{'rte'}, or \code{'fun'}. \\
+\code{TagFunction} & \code{[]} & Logical function of \code{(X,Y)} or \code{(X,Y,L)} used by \code{'fun'}. \\
+\code{TagThreshold} & \code{1e-3} & Scalar or function of AMR level for \code{'ulap'} and \code{'rte'}. \\
+\code{TagBuffer} & \code{2} & Square tag dilation radius in current-finest-level cells. \\
+\code{MinBoxWidth} & \code{4} & Desired minimum cluster width in parent cells. \\
+\code{MinFillRatio} & \code{0.70} & Tag density at which a candidate cluster box is accepted. \\
+\code{Verbose} & \code{1} & 0 silent, 1 stage summaries, 2 per-cycle residual output. \\
+\code{InitialGuess} & \code{[]} & Function \code{@(X,Y)} applied to every initial uniform level. New adaptive levels are initialized by parent prolongation. \\
+\code{MeanZero} & \code{'auto'} & Final composite mean shift. Auto activates only for the singular all-Neumann, zero-reaction case. \\
+\code{SourceQuad} & \code{1} & Midpoint source for 1 or less; tensor Gauss--Legendre cell average for an integer greater than 1. \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+\chapter{Function-by-Function Reference}
+\label{app:functions}
+
+\small
+\begin{longtable}{@{}p{0.25\textwidth}p{0.65\textwidth}@{}}
+\caption{The solver source files (\code{src/}) and principal demos. Test drivers in \code{tests/} and the remaining example scripts in \code{examples/} are not listed.}\label{tab:functions}\\
+\toprule
+Function/file & Responsibility \\
+\midrule
+\endfirsthead
+\toprule
+Function/file & Responsibility \\
+\midrule
+\endhead
+\code{ebProblem} & Normalize the domain, coefficient/source handles, side boundary specifications, and optional exact solution. \\
+\code{ebOptions} & Parse hierarchy, interface, multigrid, adaptivity, and diagnostic options. \\
+\code{ebSolve} & Top-level adaptive workflow; return hierarchy, statistics, errors, conservation check, and level summaries. \\
+\code{ebSetup} & Build the initial uniform sub-root/root ladder, transfers, ghosts, and bottom factorization. \\
+\code{ebMakeLevel} & Allocate patch arrays; sample coefficients, source, and boundary data; construct base diagonals and metadata. \\
+\code{ebAddLevel} & Append one adaptive level, rebuild static machinery, and prolong the parent solution as its initial guess. \\
+\code{ebBuildOps} & Precompute ownership classifications, same-level copies, parent windows, restriction/force scatters, correction targets, and coverage masks. \\
+\code{ebCoeffFilldown} & Average fine face/cell coefficients onto covered parent regions and recompute relaxation diagonals. \\
+\code{ebGatherParentCoeffs} & Build parent coefficient gather descriptors and persistent coarse interface diffusivity vectors. \\
+\code{ebParentCoeffs} & Materialize parent $D^x,D^y,C$ arrays over one child footprint for a coarse load. \\
+\code{ebKernels} & Provide the flux operator, inverse diagonal, colored smoother kernel, four-cell restriction, and bilinear prolongation. \\
+\code{ebBcFold} & Compute physical-boundary diagonal increments for exact ghost-eliminated point relaxation. \\
+\code{ebFillGhosts} & Fill coarse--fine, same-level, and physical ghosts in canonical order. \\
+\code{ebInterpCf} & Evaluate QIF or LIF face/corner coarse--fine ghost formulas. \\
+\code{ebRelaxLevel} & Perform global-parity red--black Gauss--Seidel sweeps and refresh ghosts after each color. \\
+\code{ebTransfer} & Restrict, gather rings, prolong corrections, or cascade fill-down. \\
+\code{ebGatherWindow} & Assemble a complete padded parent solution window from one or more parent patches. \\
+\code{ebCoarseLoad} & Form the FAS parent force on covered cells and add conservative interface corrections. \\
+\code{ebFaceCorrections} & Compute per-face flux-balance correction values for one child patch. \\
+\code{ebVcycle} & Recursive AFAS V-cycle; dispatch the bottom direct solve. \\
+\code{ebCoarsest} & Assemble/factor and solve the full-domain level-1 ghost-eliminated system; augment singular Neumann cases. \\
+\code{ebSolveCycles} & Repeat fixed-hierarchy V-cycles, synchronize levels, measure residuals, and record stage statistics. \\
+\code{ebTagCluster} & Build tag masks, buffer/clip for nesting, and cluster tags into parent-space boxes. \\
+\code{ebRte} & Compute and upsample the relative truncation-error indicator. \\
+\code{ebCompResidual} & Evaluate conservative composite residual norms on visible cells. \\
+\code{ebCompositeMean} & Compute a visible-cell, area-weighted composite mean. \\
+\code{ebErrorNorms} & Compute composite $L^2$ and $L^\infty$ errors and per-level counts. \\
+\code{ebMassCheck} & Evaluate the discrete global conservation identity. \\
+\code{ebSample} & Bilinearly sample the finest available patch at arbitrary points. \\
+\code{ebPlot} & Export adaptive mesh or sampled composite-solution figures. \\
+\code{demoPoissonAdaptive} & Concise adaptive manufactured-solution example with mesh/solution output. \\
+\code{demoVisualWalkthrough} & Animated pedagogical tour with indicators, tags, patches, interface stencil, errors, and statistics. \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+\chapter{Notation and Array Shapes}
+\label{app:notation}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.20\textwidth}p{0.25\textwidth}X@{}}
+\toprule
+Mathematical object & Code representation & Notes \\
+\midrule
+Patch box $B$ & \code{lev.box(p,:)} & \code{[ilo ihi jlo jhi]} in global level indices. \\
+Full approximation $u_h$ & \code{lev.Q\{p\}} & Padded by one ghost layer. \\
+Physical source $f_h$ & \code{lev.FTrue\{p\}} & Midpoint or cell-average representation. \\
+Working FAS force & \code{lev.F\{p\}} & Reset each cycle, overwritten on descent. \\
+$x$-face diffusion & \code{lev.DeW\{p\}} & $(m_x+1)\times m_y$. \\
+$y$-face diffusion & \code{lev.DnS\{p\}} & $m_x\times(m_y+1)$. \\
+Reaction $C_h$ & \code{lev.CC\{p\}} & Cell centered. \\
+Restricted child state & \code{lev.QC\{p\}} & Parent-scale interior plus ring. \\
+Current parent window & local variable \code{W} & Gathered after coarse solve for correction. \\
+Restriction $R$ & \code{H.K.restrict2} & Four-cell average. \\
+Prolongation $P$ & \code{H.K.prolong} & Cell-centered bilinear interpolation. \\
+Visibility $\chi$ & \code{~lev.covered\{p\}} & Used in all composite sums. \\
+Interface correction $\mathcal C$ & \code{ebFaceCorrections} & Added to parent force/residual outside a child footprint. \\
+\bottomrule
+\end{tabularx}
+\caption{Translation between mathematical notation and code arrays.}
+\end{table}
+
+\chapter{Suggested Verification Suite}
+\label{app:verification}
+A robust extension or refactor should be checked with several independent tests.
+
+\section{Uniform-grid manufactured convergence}
+Set \code{MaxLevels=1}, use smooth variable $D$, nonnegative $C$, and an exact solution. Refine \code{BaseCells} and verify second-order spatial convergence of the error norms. This isolates the finite-difference and physical-boundary closures from AMR effects.
+
+\section{Adaptive manufactured convergence}
+Use localized smooth features, a level-scaled indicator, and several AMR depths. Check that the error decreases with finest spacing while allocated cells remain substantially below a uniform finest grid.
+
+\section{Mass-correction A/B test}
+Run the same adaptive problem with \code{MassCorrection=true} and false. The conservative run should exhibit a much smaller \code{sol.mass.rel}; the comparison directly exercises interface correction assembly and destination scatters.
+
+\section{Patch-seam invariance}
+Represent the same uniform level once as one patch and once as several touching patches, holding all other data fixed. Results should agree to solver tolerance. This exercises global red--black parity and same-level ghost exchange.
+
+\section{Pure-Neumann gauge test}
+Choose a compatible manufactured problem with all-Neumann data and $C=0$. Verify residual convergence, near-zero final composite mean under \code{MeanZero='auto'}, and error convergence modulo the additive constant.
+
+\section{Coefficient-compatibility test}
+Use strongly varying but positive $D(x,y)$. After level creation, independently average fine face coefficients and compare them with covered parent values. This protects \code{ebCoeffFilldown}, parent coefficient gathers, and interface diffusivity vectors.
+
+\chapter{Compatibility, Error Semantics, and Proof Boundaries}
+\label{app:audit}
+\input{docs/implementation_audit.tex}
+
+\backmatter
+\renewcommand{\bibname}{References}
+\phantomsection
+\addcontentsline{toc}{chapter}{References}
+\begin{thebibliography}{9}
+
+\bibitem{Feng2018}
+W. Feng, Z. Guo, J. S. Lowengrub, and S. M. Wise,
+``A mass-conservative adaptive FAS multigrid solver for cell-centered finite difference methods on block-structured, locally-Cartesian grids,''
+\emph{Journal of Computational Physics}, 352 (2018), 463--497.
+\href{https://doi.org/10.1016/j.jcp.2017.09.065}{doi:10.1016/j.jcp.2017.09.065}.
+
+\bibitem{BergerRigoutsos1991}
+M. J. Berger and I. Rigoutsos,
+``An algorithm for point clustering and grid generation,''
+\emph{IEEE Transactions on Systems, Man, and Cybernetics}, 21(5) (1991), 1278--1286.
+\href{https://doi.org/10.1109/21.120081}{doi:10.1109/21.120081}.
+
+\bibitem{Briggs2000}
+W. L. Briggs, V. E. Henson, and S. F. McCormick,
+\emph{A Multigrid Tutorial}, 2nd ed., SIAM, Philadelphia, 2000.
+
+\bibitem{Trottenberg2001}
+U. Trottenberg, C. W. Oosterlee, and A. Schuller,
+\emph{Multigrid}, Academic Press, 2001.
+
+\end{thebibliography}
+
+\end{document}

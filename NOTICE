@@ -1,0 +1,11 @@
+BSAM in MATLAB
+Copyright 2026 Calvin Wong
+
+MATLAB implementations of block-structured adaptive FAS multigrid.
+The numerical method is described by Feng, Guo, Lowengrub and Wise,
+Journal of Computational Physics 352 (2018), 463-497.
+
+The starfish geometry, parameters, and forcing follow Calvin1127XD/
+DiffuseDomainHelmholtz at commit a9d8449005f4ab030e64cf4c346c7225998fa01e.
+The distance evaluator, transmission adapter, and gallery are new here.
+See provenance/README.md for source and packaging details.

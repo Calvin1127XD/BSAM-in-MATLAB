@@ -1,0 +1,384 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{microtype}
+\emergencystretch=2em
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\dive}{\nabla\!\cdot\!}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\B}{\mathcal{B}}
+
+\title{The diffuse domain method on a mass-conservative adaptive
+multigrid solver:\\ formulation, well-posedness, and
+$\eps$-convergence analysis}
+\author{DiffuseDomainBSAM documentation\\[2pt]
+\small companion to \texttt{EllipticBSAM/docs/convergence\_theory.pdf}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We analyze the diffuse-domain reformulations solved by
+\texttt{DiffuseDomainBSAM}: the flux/Neumann form of Feng, Guo,
+Lowengrub \& Wise (2018), eq.~(6.18), and a Dirichlet penalty form, both
+of which are instances of the general solver's equation
+$-\dive(D_{dd}\nabla u)+C_{dd}u=f_{dd}$ with particular coefficients
+built from a phase field $\phi$.  We prove uniform ellipticity of the
+floored formulation and explain the formal matched-asymptotic prediction
+of $O(\eps^2)$ for the smooth Neumann model under the required extension
+and matching assumptions. This is not a uniform error theorem for every
+coefficient, geometry, or penalty formulation. We also prove an
+exact-reproduction lemma: for the analytic data extensions used in the
+classical star-domain benchmark, the continuous diffuse-domain solution
+\emph{satisfies the unfloored differential equation} for every $\eps$.
+Equality of boundary-value solutions additionally requires compatible
+outer data; the implemented floor is a separate perturbation. A
+constant-normal extension gives measured rates near two in a small
+circle study. We further quantify how the adaptive
+hierarchy with
+geometric band tagging resolves the layer at the finest resolution
+while leaving the bulk coarse, and why the flux-balance corrections of
+the underlying solver are essential at small $\eps$.
+\end{abstract}
+
+\section{Formulation}
+
+Let $\Omega_1\subset\B$ be a smooth domain compactly contained in the
+rectangle $\B$, described by a level set $\psi$ with $\psi<0$ in
+$\Omega_1$, $\Gamma=\{\psi=0\}$.  Define the phase field
+\begin{equation}\label{eq:phi}
+  \phi(x) = \tfrac12\Bigl(1-\tanh\frac{3\psi(x)}{\eps}\Bigr),
+\end{equation}
+so $\phi\to 1$ in $\Omega_1$, $\phi\to0$ outside, with transition layer
+of width $O(\eps)$.  Two reformulations of
+\begin{equation}\label{eq:sharp}
+  \beta u-\dive(D\nabla u)=f \text{ in }\Omega_1,
+  \qquad\text{(BC on }\Gamma\text{)}
+\end{equation}
+onto $\B$ (homogeneous Neumann on $\partial\B$) are used:
+
+\paragraph{Neumann data $D\,\partial_n u = g$ on $\Gamma$} (Feng et
+al.\ eq.~(6.18); Li--Lowengrub--R\"atz--Voigt \cite{LLRV}):
+\begin{equation}\label{eq:ddmn}
+  \beta\,\phi\,u_\eps-\dive(\phi D\nabla u_\eps)
+  = \phi f + |\nabla\phi|\,g
+  \quad\text{in }\B,
+\end{equation}
+i.e.\ the general solver is called with
+$D_{dd}=\phi D$, $C_{dd}=\beta\phi$, $f_{dd}=\phi f+|\nabla\phi|g$.
+
+\paragraph{Dirichlet data $u=g$ on $\Gamma$} (penalty form):
+\begin{equation}\label{eq:ddmd}
+  -\dive(\phi D\nabla u_\eps)+\phi C u_\eps
+  +\frac{\mu}{\eps^3}(1-\phi)(u_\eps-g)=\phi f ,
+\end{equation}
+i.e.\ $C_{dd}=\phi C+\mu\eps^{-3}(1-\phi)$,
+$f_{dd}=\phi f+\mu\eps^{-3}(1-\phi)g$.
+
+Here $f$ and $g$ denote smooth extensions of the data off $\Gamma$.
+
+\section{Well-posedness and the $\phi$-floor}
+
+In double precision $\tanh$ saturates and $\phi$ vanishes identically a
+few layer-widths outside $\Gamma$, making \eqref{eq:ddmn} degenerate.
+The implementation replaces $\phi$ by
+$\phi_\delta=\max(\phi,\delta)$ in $D_{dd}$ (and in $C_{dd}$ for
+\eqref{eq:ddmn}), $\delta=10^{-8}$ by default.
+
+\begin{lemma}[continuous coercivity at fixed floor]
+Suppose $0<D_{\min}\le D\le D_{\max}$ and $0<\delta<1$.
+Then $D_{dd}\ge\delta D_{\min}>0$. For the Neumann formulation with
+$\beta>0$, $C_{dd}\ge\beta\delta>0$, and its weak bilinear form is
+coercive on $H^1(\B)$, hence has a unique solution for bounded data.
+For the penalty formulation assume $C\ge0$, $\mu>0$, and a positive-measure
+exterior region; its positive reaction controls the constant mode and a
+weighted Poincare inequality gives the same fixed-parameter conclusion.
+If $\beta=0$ with only Neumann outer data, compatibility and a mean
+normalization are required. These continuous statements do not establish
+that an assembled QIF composite matrix is an $M$-matrix: interpolation,
+coefficient ratios, and mesh structure must also be checked.
+\end{lemma}
+
+\begin{lemma}[effect of the floor]\label{lem:floor}
+Let $0<\delta<1/2$. Let $u_\eps$ solve \eqref{eq:ddmn}, and let
+$u_\eps^\delta$ solve the equation with diffusion $\phi_\delta D$ and
+reaction $\beta\phi_\delta$, keeping the assembled right-hand side
+$f_{dd}=\phi f+|\nabla\phi|g$ unchanged, as in the implementation.
+The coefficient perturbation is supported in
+$\{\phi<\delta\}=\{\psi>\psi_\delta\}$ with
+$\psi_\delta=\tfrac{\eps}{6}\ln\frac{1-\delta}{\delta}
+\approx\tfrac{\eps}{6}\ln\frac1\delta$, a logarithmic distance in
+layer units outside $\Gamma$. Assume $\beta>0$, homogeneous outer Neumann data,
+and the stated ellipticity bounds on $D$. Testing the difference equation with
+the difference and using $\phi\le\phi_\delta\le\phi+\delta$,
+\[
+  \|\sqrt{\phi_\delta}\,\nabla(u_\eps^\delta-u_\eps)\|_{L^2(\B)}^2
+  +\beta\|\sqrt{\phi_\delta}\,(u_\eps^\delta-u_\eps)\|_{L^2(\B)}^2
+  \;\le\; C\,\delta\,
+  \bigl(\|\nabla u_\eps\|^2_{L^2(\phi<\delta)}
+  +\|u_\eps\|^2_{L^2(\phi<\delta)}\bigr),
+\]
+Since $\phi\ge1/2$ inside $\Omega_1$, this controls the interior
+$H^1$ error by $O(\delta^{1/2})$ times the displayed exterior norms.
+Uniformity in $\eps$ requires an independent bound on those norms.
+The estimate is an energy estimate, not an $L^\infty$ bound, and it
+does not certify that a particular floor is below a requested tolerance.
+\end{lemma}
+
+\section{Sharp-interface limit: matched asymptotics}\label{sec:asymp}
+
+We expand \eqref{eq:ddmn}.  Assume first that $\psi=d$, the
+\emph{signed distance} to $\Gamma$ ($|\nabla d|=1$), let $\kappa$ be
+the curvature, and use normal--tangential coordinates $(d,s)$ with the
+stretched variable $z=d/\eps$ and profile
+$\Phi(z)=\tfrac12(1-\tanh 3z)$, so that
+\[
+  \phi=\Phi(z),\qquad
+  |\nabla\phi|=\eps^{-1}|\Phi'(z)|,\qquad
+  \int_{-\infty}^{\infty}|\Phi'(z)|\,dz=1 .
+\]
+Write outer expansions $u_\eps=u^0+\eps u^1+\cdots$ in $\Omega_1$ (and
+in $\B\setminus\overline\Omega_1$) and an inner expansion
+$\tilde u(z,s)=\tilde u^0+\eps\tilde u^1+\eps^2\tilde u^2+\cdots$.  In
+the layer,
+\[
+  \dive(\phi D\nabla u)=
+  \eps^{-2}\partial_z\bigl(\Phi D\,\partial_z\tilde u\bigr)
+  +\eps^{-1}\kappa\,\Phi D\,\partial_z\tilde u
+  +O(1).
+\]
+
+\paragraph{Order $\eps^{-2}$.}
+$\partial_z(\Phi D\,\partial_z\tilde u^0)=0$, so
+$\Phi D\,\partial_z\tilde u^0=a(s)$.  Matching to the interior outer
+solution as $z\to-\infty$ ($\Phi\to1$, $\partial_z\tilde u^0\to0$)
+forces $a\equiv0$; since $\Phi>0$ for all finite $z$,
+$\partial_z\tilde u^0\equiv 0$:
+\begin{equation}\label{eq:u0const}
+  \tilde u^0=\tilde u^0(s)=u^0\big|_\Gamma(s),
+\end{equation}
+the leading inner solution is constant across the layer.  The interior
+outer problem at $O(1)$ is the sharp equation \eqref{eq:sharp}.
+
+\paragraph{Order $\eps^{-1}$ --- recovery of the Neumann condition.}
+Using \eqref{eq:u0const},
+\[
+  -\partial_z\bigl(\Phi D\,\partial_z\tilde u^1\bigr)
+  = |\Phi'(z)|\,g(s) .
+\]
+Integrating over $z\in\mathbb R$ and using
+$\Phi D\partial_z\tilde u^1\to D\,\partial_d u^0|_\Gamma$ as
+$z\to-\infty$ (matching) and $\to0$ as $z\to+\infty$ (boundedness;
+verified below), and $\int|\Phi'|=1$:
+\begin{equation}\label{eq:bc}
+  D\,\partial_n u^0 = g \quad\text{on }\Gamma .
+\end{equation}
+Thus $u^0$ solves the sharp problem.  Solving for the profile,
+\[
+  \Phi D\,\partial_z\tilde u^1(z)
+  = D\partial_n u^0\big|_\Gamma - g\!\int_{-\infty}^{z}\!|\Phi'|
+  = g\!\int_{z}^{\infty}\!|\Phi'|\,dz' ,
+\]
+whose right side decays like $e^{-6z}$, matching $\Phi\sim e^{-6z}$, so
+$\partial_z\tilde u^1$ is bounded: the expansion is consistent.
+
+\paragraph{Next order and scope of the formal prediction.}
+For the smooth, constant-coefficient Neumann model with signed distance
+and constant-normal extensions, the full matching calculation in
+\cite{LervagLowengrub} gives $u^1=0$ when $\beta>0$; in the pure
+Neumann case the constant correction must be fixed by a consistent gauge.
+The symmetric profile satisfies
+$\int_{\mathbb R}z|\Phi'(z)|\,dz=0$ and
+$\int_{\mathbb R}(\Phi(z)-\mathbf 1_{z<0})\,dz=0$.
+These identities help cancel the first correction; by themselves they
+are not a substitute for all solvability and matching conditions.
+The resulting formal prediction is
+\begin{equation}\label{eq:eps2}
+  \|u_\eps-u\|_{L^2(\Omega_1)} = O(\eps^2),
+\end{equation}
+under those assumptions. Extending it to variable $D$, an arbitrary data
+extension, a finite outer boundary, the floor, and a changing adaptive
+mesh requires additional error estimates.
+
+\begin{lemma}[exact reproduction by compatible extensions]\label{lem:exact}
+Let $u_e\in C^2(\overline\B)$ and suppose the data extensions satisfy,
+pointwise in $\B$,
+\[
+  \beta u_e-\dive(D\nabla u_e)=f
+  \qquad\text{and}\qquad
+  |\nabla\phi|\,g=-\nabla\phi\cdot D\nabla u_e .
+\]
+Then $u_e$ satisfies the unfloored differential equation \eqref{eq:ddmn}
+\emph{exactly, for every} $\eps$: indeed
+$\beta\phi u_e-\dive(\phi D\nabla u_e)
+=\phi(\beta u_e-\dive(D\nabla u_e))-\nabla\phi\cdot D\nabla u_e
+=\phi f+|\nabla\phi|g$.
+The second condition holds whenever $g$ is extended as
+$g=D\nabla u_e\cdot\nabla\psi/|\nabla\psi|$, because
+$\nabla\phi=\phi'(3\psi/\eps)\tfrac{3}{\eps}\nabla\psi$ with $\phi'<0$,
+so $|\nabla\phi|=-\phi'\tfrac3\eps|\nabla\psi|$.
+In particular, for the test data $u_e=(x^2+y^2)/4$,
+$f=u_e-\Delta u_e=r^2/4-1$ and $g=\nabla u_e\cdot n_\psi$ (any
+geometry, including the flower), this is an exact differential identity.
+To be the solution on $\B$, $u_e$ must also satisfy the imposed outer
+boundary condition. The quadratic does not satisfy homogeneous Neumann
+conditions on a finite box, and the floor changes the identity. Thus
+the benchmark is dominated by layer discretization when these other
+errors are small, but does not have identically zero total model error.
+This observation also applies to the corresponding test construction of
+Feng et al.\ (their Sec.~6.4): the $\eps$-convergence reported there is
+convergence of the \emph{numerical} solution under the coupled
+$(\eps,h)$ schedule.  To probe the genuine $O(\eps^2)$ \emph{model}
+convergence one must use an extension that breaks the identity --- the
+canonical choice being the constant-in-normal extension
+$g\equiv g|_\Gamma$ --- and separate the discretization error, e.g.\ by
+Richardson extrapolation in $h$ at fixed $\eps$ (test D1b).
+\end{lemma}
+
+\begin{remark}[non-distance level sets]\label{rem:nondist}
+If $\Gamma$ is described by a level set $\psi$ with
+$|\nabla\psi|\ne1$ (e.g.\ the flower $\psi=r-R_0(\theta)$ of Feng et
+al.\ eq.~(6.19)), then in the true normal coordinate
+$\psi = |\nabla\psi|_\Gamma\, d + \tfrac12 (\partial^2_n\psi)\, d^2 +
+O(d^3)$, and $\phi=\Phi(\psi/\eps)$ has a spatially varying physical
+width and can be skewed in $d$. The signed-distance calculation above
+therefore cannot be transferred without re-expanding the geometry and
+data. No universal rate between one and two follows from
+$|\nabla\psi|\ne1$ alone: even a constant rescaling of a distance function
+changes the width without destroying symmetry. Reinitialization can
+simplify the analysis, but does not itself prove a convergence rate.
+\end{remark}
+
+\begin{remark}[corners]\label{rem:corners}
+For a polygonal $\Omega_1$ with the exact signed distance as level set,
+$|\nabla\psi|=1$ a.e.\ but $\nabla\psi$ jumps across the corner
+bisectors.  Two distinct effects follow.  (i)~In the \emph{flux} form
+\eqref{eq:ddmn} the extended datum $g=\nabla u\cdot n_\psi$ inherits the
+jump: $f_{dd}$ is discontinuous along five lines (for a pentagon)
+inside the band, and the corner neighborhoods converge at reduced order
+in $L^2$ (measured: rate $\approx0.7$ in $L^2$, $\approx1.7$ in
+$L^\infty$, at fixed $\eps/h$) in the recorded test. Discontinuous extended data can reduce regularity;
+these observations alone do not isolate the source of the measured rate.  (ii)~The \emph{penalty} form
+\eqref{eq:ddmd} never references the normal; corners enter only through
+the geometry of $\phi$, and the measured $\eps$-rates on the pentagon
+are $1.5$--$1.8$ over the recorded range. The smooth Neumann
+expansion does not establish the asymptotic penalty rate at corners.
+\end{remark}
+
+\paragraph{Dirichlet penalty.}  For \eqref{eq:ddmd} the dominant inner
+balance at $O(\eps^{-3})$ is $\mu(1-\Phi)(\tilde u^0-g)=0$; since
+$1-\Phi>0$ for all finite $z$, $\tilde u^0\equiv g$ throughout the
+layer and matching gives $u^0=g$ on $\Gamma$: the Dirichlet condition
+is enforced at leading order.  The $\eps^{-3}$ scaling makes the
+penalty dominate the diffusion ($\eps^{-2}$) by one order, and the
+leading-order argument does not determine the error rate. The paper
+\cite{LervagLowengrub} analyzes Neumann and Robin approximations and is
+not a proof of second-order accuracy for this Dirichlet penalty.
+The disc suite measures rates $1.8$, $2.1$, and $3.6$ over its finite
+schedule; these are observations for that problem, not a general
+second-order theorem.
+
+\section{Interaction with the adaptive solver}
+
+\begin{remark}[band tagging and actual coverage]\label{lem:band}
+Tag every cell with $|\psi|<w\eps$ (TagWidth $w=2.5$ by default) on
+every level, with buffer $b\ge2$ cells.  Then outside the tagged band
+$|\phi-\mathbf 1_{\psi<0}|\le\tfrac12(1-\tanh 3w)\approx 3\cdot10^{-7}$
+($w=2.5$). This is a phase-field tail bound, not a guarantee of
+finest-level coverage: tags are sampled at cell centers, clustering may
+drop thin fragments, and the level cap may stop refinement. Check the
+visible cells intersecting the band. For narrow layers, a useful
+level-dependent tag width is $\max(w\eps,3h_k)$ for signed distance;
+this reduces missed coarse-grid fragments, but still needs coverage
+verification. The tail is nonzero even outside the tagged band.
+\end{remark}
+
+\begin{remark}[a local coefficient-ratio check]
+For two sample points separated by at most $h$, assume
+$|\nabla\psi|\le G$ along the connecting segment. Since
+$|\partial_\psi\log\phi|\le6/\eps$, the phase-field ratio is bounded
+below by $e^{-6Gh/\eps}$; flooring preserves this bound. If the physical
+diffusivity ratio is bounded below by $\rho_D>0$, a sufficient check
+for a local ratio $D_2/D_1\ge1/5$ is
+\[
+  \rho_D e^{-6Gh/\eps}\ge\tfrac15.
+\]
+For constant physical diffusivity and signed distance this reduces to
+$\eps/h\ge6/\log5\approx3.73$. Use the actual spacing and geometry at
+the coarse--fine stencil, not just the finest spacing. This local check
+does not certify diagonal dominance or positivity of the entire
+composite QIF matrix.
+\end{remark}
+
+\begin{remark}[why the flux-balance corrections matter here]
+The DDM coefficients are exponentially small outside the band, so the
+solution is determined almost entirely through the layer --- the region
+crossed by every coarse--fine interface.  Any flux imbalance there acts
+like a spurious source of relative size $O(h^2)$ \emph{concentrated
+exactly where all the physics happens}.  The suite's ablation shows the
+consequence at $\eps=0.1$ (4-level mesh): disabling the corrections
+inflates the interior $L^2$ error from $3.0\cdot10^{-6}$ to
+$5.2\cdot10^{-3}$ (a factor $\sim$1700) and the mass defect from
+$10^{-13}$ to $2\cdot10^{-3}$ --- the multilevel analogue of the
+paper's Table~6, and the mechanism behind the divergence of earlier
+in-house attempts at $\ge3$ levels.
+\end{remark}
+
+\section{Numerical verification}\label{sec:num}
+
+Produced by \texttt{tests/runDdTests.m}; complete logs and tables in
+\texttt{TEST\_REPORT.md}.  Highlights (interior $L^2$ errors against the
+sharp solution):
+
+\begin{itemize}
+\item \textbf{Flower (paper Sec.~6.4 replication), Neumann form,
+analytic extensions:} Lemma~\ref{lem:exact} explains the differential
+cancellation, subject to its floor and outer-boundary qualifications.
+The $(\eps,h)$-schedule errors are dominated by layer discretization,
+decaying with observed rates $\approx1.5$ in $\eps$ at fixed
+$\eps/h=20.5$ down to $1.1\cdot10^{-6}$ at $\eps=0.05$ (effective
+$2048^2$); the adaptive 4-level solution agrees with the uniform
+solution of equal finest resolution to $\lesssim1\%$ while using
+$5$--$10\times$ fewer cells.
+\item \textbf{Circle, constant-normal extension (model-error diagnostic):}
+The diagnostic $(4E(h/2)-E(h))/3$ assumes a smooth $h^2$ expansion of
+the error norm; it estimates a model-error floor but is not a certified
+extrapolation of the solution. Its measured $\eps$-rate is near two,
+consistent with \eqref{eq:eps2}. The displayed ratios of total errors
+at fixed $\eps$ are near zero order because model error dominates;
+they do not measure spatial order.
+\item \textbf{Disc, Dirichlet penalty:} rates $1.8$--$2.1$ (with a
+superconvergent last interval as the discretization error crosses the
+model error).
+\item \textbf{Conservation:} relative mass defect
+$10^{-16}$--$10^{-13}$ at all $\eps$ with the corrections on; up to
+$10^{-3}$ with them off, accompanied by a $\sim10^3\times$ loss of
+interior accuracy at $\eps\le0.1$ on the 4-level meshes.
+\item \textbf{Solver:} V(3,3) factors $0.05$--$0.16$ per cycle on the
+adaptive DDM hierarchies, independent of $\eps$ despite coefficient
+degeneracy of eight orders of magnitude.
+\end{itemize}
+
+\begin{thebibliography}{9}
+\bibitem{FGLW2018} W.~Feng, Z.~Guo, J.~S.~Lowengrub, S.~M.~Wise,
+A mass-conservative adaptive FAS multigrid solver for cell-centered
+finite difference methods on block-structured, locally-cartesian grids,
+\emph{J.~Comput.~Phys.} 352 (2018) 463--497.
+\bibitem{LLRV} X.~Li, J.~Lowengrub, A.~R\"atz, A.~Voigt, Solving PDEs in
+complex geometries: a diffuse domain approach, \emph{Commun.\ Math.\
+Sci.} 7 (2009) 81--107.
+\bibitem{LervagLowengrub} K.~Y.~Lerv\r{a}g, J.~Lowengrub, Analysis of
+the diffuse-domain method for solving PDEs in complex geometries,
+\emph{Commun.\ Math.\ Sci.} 13 (2015) 1473--1500.
+\end{thebibliography}
+
+\end{document}

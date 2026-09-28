@@ -1,0 +1,675 @@
+\documentclass[11pt,oneside,openany]{book}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{newtxmath}
+\usepackage[scaled=0.92]{inconsolata}
+\usepackage{microtype}
+\usepackage[letterpaper,margin=1in,headheight=15pt]{geometry}
+\usepackage{mathtools,bm}
+\usepackage{booktabs,longtable,tabularx,array,multirow}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,shapes.geometric,decorations.pathreplacing,matrix}
+\usepackage[most]{tcolorbox}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\makeatletter
+\renewcommand{\theALG@line}{\thealgorithm.\arabic{ALG@line}}
+\renewcommand{\theHALG@line}{\thealgorithm.\arabic{ALG@line}}
+\makeatother
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\definecolor{bsblue}{HTML}{24557A}
+\definecolor{bslightblue}{HTML}{EAF2F8}
+\definecolor{bsgreen}{HTML}{3A7D44}
+\definecolor{bslightgreen}{HTML}{EDF7EE}
+\definecolor{bsorange}{HTML}{B5651D}
+\definecolor{bslightorange}{HTML}{FFF3E6}
+\definecolor{bsred}{HTML}{A33A3A}
+\definecolor{bsgray}{HTML}{5E6670}
+\definecolor{bslightgray}{HTML}{F3F5F7}
+\definecolor{bsdark}{HTML}{1F2933}
+\definecolor{cbBlue}{HTML}{0072B2}
+\definecolor{cbOrange}{HTML}{E69F00}
+\definecolor{cbPurple}{HTML}{CC79A7}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=bsblue,
+  citecolor=bsgreen,
+  urlcolor=bsorange,
+  pdftitle={EllipticBSAMTree Code Documentation},
+  pdfauthor={Documentation of the EllipticBSAMTree and CHStokesBSAMTree MATLAB implementations},
+  pdfsubject={Strict-tree block-structured adaptive multigrid: elliptic and Cahn-Hilliard-Stokes solvers}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small EllipticBSAMTree Code Documentation}
+\fancyhead[R]{\small\nouppercase{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt minus 1pt}
+\emergencystretch=2em
+
+\newcommand{\code}[1]{\textnormal{\texttt{#1}}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\dd}{\,\mathrm{d}}
+\DeclareMathOperator{\divop}{div}
+\newcommand{\ULap}{\mathrm{ULap}}
+\newcommand{\UDiv}{\mathrm{UDiv}}
+
+\newtheorem{invariant}{Implementation invariant}[chapter]
+\newtheorem{remark}{Remark}[chapter]
+
+\newtcolorbox{keyidea}[1][]{
+  enhanced,breakable,colback=bslightblue,colframe=bsblue,
+  boxrule=0.7pt,arc=1.5mm,left=2mm,right=2mm,top=1.5mm,bottom=1.5mm,
+  title={Key idea},fonttitle=\bfseries,#1}
+\newtcolorbox{codepath}[1][]{
+  enhanced,breakable,colback=bslightgreen,colframe=bsgreen,
+  boxrule=0.7pt,arc=1.5mm,left=2mm,right=2mm,top=1.5mm,bottom=1.5mm,
+  title={Code path},fonttitle=\bfseries,#1}
+\newtcolorbox{cautionbox}[1][]{
+  enhanced,breakable,colback=bslightorange,colframe=bsorange,
+  boxrule=0.7pt,arc=1.5mm,left=2mm,right=2mm,top=1.5mm,bottom=1.5mm,
+  title={Implementation note},fonttitle=\bfseries,#1}
+\newtcolorbox{fortranbox}[1][]{
+  enhanced,breakable,colback=bslightgray,colframe=bsgray,
+  boxrule=0.7pt,arc=1.5mm,left=2mm,right=2mm,top=1.5mm,bottom=1.5mm,
+  title={Fortran correspondence},fonttitle=\bfseries,#1}
+
+\lstdefinestyle{matlabstyle}{
+  language=Matlab,
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{bsblue}\bfseries,
+  commentstyle=\color{bsgreen!70!black},
+  stringstyle=\color{bsorange!90!black},
+  numbers=left,
+  numberstyle=\scriptsize\color{bsgray},
+  stepnumber=1,
+  numbersep=8pt,
+  frame=single,
+  rulecolor=\color{bsgray!35},
+  backgroundcolor=\color{bslightgray},
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+  tabsize=2,
+  captionpos=b
+}
+\lstset{style=matlabstyle}
+
+\title{\bfseries EllipticBSAMTree Code Documentation\\[6pt]
+\Large A strict-tree block-structured adaptive multigrid solver\\
+for cell-centered elliptic problems}
+\author{Documentation of the supplied MATLAB implementation\\
+\small following the Fortran BSAM 2.0 library (SuperBSAM)}
+\date{July 2026}
+
+\begin{document}
+\frontmatter
+\maketitle
+\tableofcontents
+
+\chapter*{Preface}
+\addcontentsline{toc}{chapter}{Preface}
+
+\code{EllipticBSAMTree} (function prefix \code{ebt}) solves
+$-\divop(D\nabla u)+Cu=f$ on a rectangle with Dirichlet/Neumann sides,
+using the block-structured adaptive FAS multigrid (BSAM) methodology of
+Feng--Guo--Lowengrub--Wise \cite{feng2018} reorganized around a
+\emph{strict single-parent patch tree} --- the data structure of the
+Fortran reference library \code{SuperBSAM/BSAM2.0}
+(\code{treeops.f90} and friends).  It is numerically identical to the
+companion \code{EllipticBSAM} solver --- same discretization, same
+QIF/LIF coarse--fine interpolation, same conservative flux corrections
+--- but every fine patch has exactly one parent that fully contains it,
+which turns every coarse--fine transfer into a single slice of one
+parent array.
+
+The reader is assumed to know the companion document \emph{BSAM Code
+Documentation} (in the \code{EllipticBSAM} folder), which develops the
+discretization, the QIF/LIF ghost interpolation, the flux-balance
+corrections and the AFAS V-cycle in detail.  This document concentrates
+on what is \emph{different}: the tree, its two index systems, per-parent
+clustering, and the single-parent transfer machinery.  The two sibling
+solvers built on this framework are documented in their own folders:
+\code{CHStokesBSAMTree} (Cahn--Hilliard--Stokes) and \code{CHNSBSAMTree}
+(Cahn--Hilliard--Navier--Stokes).
+
+\mainmatter
+
+% ======================================================================
+\chapter{Orientation}
+\label{ch:orientation}
+
+\section{The solver family and its lineage}
+
+Both packages inherit their numerics from \code{EllipticBSAM} and their
+\emph{architecture} from the Fortran BSAM 2.0 library.  The family tree:
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={draw=bsblue, fill=bslightblue, rounded corners=1.5mm,
+              minimum width=4.2cm, minimum height=1.05cm, align=center,
+              font=\small},
+  fbox/.style={draw=bsgray, fill=bslightgray, rounded corners=1.5mm,
+              minimum width=4.2cm, minimum height=1.05cm, align=center,
+              font=\small},
+  arr/.style={-{Stealth[length=2.6mm]}, thick, bsdark}]
+\node[box] (eb) {\code{EllipticBSAM}\\[-1pt]{\scriptsize QC-ring elliptic solver}};
+\node[fbox, right=1.6cm of eb] (f) {\code{SuperBSAM/BSAM2.0}\\[-1pt]{\scriptsize Fortran reference (treeops)}};
+\node[box, below=0.9cm of eb] (ebt) {\code{EllipticBSAMTree}\\[-1pt]{\scriptsize strict-tree elliptic solver}};
+\node[box, below=0.9cm of f] (chs) {\code{CHStokesBSAMTree}\\[-1pt]{\scriptsize Cahn--Hilliard--Stokes port}};
+\draw[arr] (eb) -- node[left, font=\scriptsize, align=right]{numerics\\(kernels, QIF)} (ebt);
+\draw[arr] (f) -- node[right, pos=0.62, font=\scriptsize, align=left]{tree design\\(per-parent clustering)} (ebt);
+\draw[arr] (ebt) -- node[below, font=\scriptsize, sloped]{tree framework} (chs);
+\draw[arr] (f) -- node[right, font=\scriptsize, align=left]{operators, smoothers,\\time loop, output} (chs);
+\node[box, right=1.5cm of chs] (chns) {\code{CHNSBSAMTree}\\[-1pt]{\scriptsize Navier--Stokes extension}};
+\draw[arr] (chs) -- node[above, font=\scriptsize]{+ inertia, $\nu(\phi)$, $\rho(\phi)$} (chns);
+\end{tikzpicture}
+\end{center}
+
+\section{What ``strict tree'' means}
+\label{sec:stricttree}
+
+In \code{EllipticBSAM} the clusterer works on a whole level at once, so
+a fine patch may overlap several coarse patches; the per-patch
+\code{parents\{p\}} field is a \emph{list}, and every coarse--fine
+transfer gathers from a union of coarse patches through precomputed
+per-cell index lists (the ``QC ring'' machinery).  That design is
+correct and, as the companion audit showed, carries no convergence
+penalty --- but it is not a tree.
+
+The tree variants instead enforce, exactly as the Fortran does:
+
+\begin{invariant}[single parent]
+\label{inv:parent}
+Every non-root patch is created by clustering \emph{inside one parent
+patch}.  Its footprint, recorded in parent-local cell coordinates as
+\code{mbounds}, satisfies $1 \le \code{mbounds} \le
+\code{parent.mx}$: a child may touch its parent's edge but never extend
+past it, and never spans two parents.
+\end{invariant}
+
+A physical feature that crosses two coarse patches therefore produces
+\emph{two abutting children}, one per parent, which communicate as
+same-level siblings --- never one straddling child
+(\cref{fig:split}).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.62]
+% left: QC-ring behavior
+\begin{scope}
+\draw[thick, bsgray] (0,0) rectangle (4,4);
+\draw[thick, bsgray] (4,0) rectangle (8,4);
+\node[font=\scriptsize\color{bsgray}] at (2,3.6) {coarse patch $A$};
+\node[font=\scriptsize\color{bsgray}] at (6,3.6) {coarse patch $B$};
+\fill[bslightorange, draw=bsorange, thick] (2.5,1.2) rectangle (5.5,2.8);
+\node[font=\scriptsize\color{bsorange}, align=center] at (4,2)
+  {one child,\\two parents};
+\node[font=\small\bfseries] at (4,-0.7) {\code{EllipticBSAM} (QC ring)};
+\end{scope}
+% right: tree behavior
+\begin{scope}[xshift=10cm]
+\draw[thick, bsgray] (0,0) rectangle (4,4);
+\draw[thick, bsgray] (4,0) rectangle (8,4);
+\fill[bslightblue, draw=bsblue, thick] (2.5,1.2) rectangle (4,2.8);
+\fill[bslightgreen, draw=bsgreen, thick] (4,1.2) rectangle (5.5,2.8);
+\node[font=\scriptsize\color{bsblue}, anchor=east] at (2.35,2) {child of $A$};
+\node[font=\scriptsize\color{bsgreen}, anchor=west] at (5.65,2) {child of $B$};
+\draw[thick, bsdark, densely dashed] (4,1.2) -- (4,2.8);
+\node[font=\scriptsize] at (4,0.75) {sibling seam};
+\node[font=\small\bfseries] at (4,-0.7) {tree variants (per-parent clustering)};
+\end{scope}
+\end{tikzpicture}
+\caption{A tagged feature crossing two coarse patches.  The QC-ring
+solver creates one multi-parent child; the tree solvers split it per
+parent, and the two children couple through the same-level (sibling)
+exchange.}
+\label{fig:split}
+\end{figure}
+
+\begin{keyidea}
+The payoff of \cref{inv:parent} is architectural: the $(c_{m_x}{+}2)
+\times (c_{m_y}{+}2)$ parent window of a child --- interior
+\emph{and} ghost ring --- becomes \emph{one contiguous slice of the
+parent's padded array}.  Every coarse--fine transfer (window gather,
+ring refresh, restriction, FAS loading, correction, coefficient
+fill-down) is a sliced copy against a single known array.  The per-cell
+multi-patch resolver machinery of the QC-ring design disappears from
+the hot path.
+\end{keyidea}
+
+\section{Where things live}
+
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & \code{EllipticBSAMTree} & \code{CHStokesBSAMTree} \\
+\midrule
+entry point & \code{ebtSolve} & \code{chsRun} \\
+problem definition & \code{ebtProblem} & \code{chsProblem} \\
+options & \code{ebtOptions} & \code{chsOptions} \\
+test suite & \code{tests/runAllTreeTests} (T1--T9) & \code{tests/runChsTests} (C1--C6) \\
+tree validator & \code{ebtTreeCheck} & \code{chsTreeCheck} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Both run headless as
+\code{matlab -batch "cd('<pkg>/tests'); <suite>"}.  Diagnostic messages
+use the tags \code{[ebtsam]} and \code{[chs]}.
+
+% ======================================================================
+\chapter{The Strict Patch Tree}
+\label{ch:tree}
+
+\section{Two index systems per patch}
+\label{sec:indexsystems}
+
+Following the Fortran \code{nodeinfo} type, every patch carries two
+coordinate records (\cref{fig:coords}):
+
+\begin{itemize}[leftmargin=2em]
+\item \code{lev.box(p,:)} $= [i_{lo}\, i_{hi}\, j_{lo}\, j_{hi}]$ ---
+the patch's cell range in the \emph{global index space of its own
+level} (the Fortran \code{mglobal}).  It drives everything
+\emph{horizontal}: owner maps, sibling ghost exchange, tag buffering,
+plotting.
+\item \code{lev.mbounds(p,:)} $= [I_l\, I_h\, J_l\, J_h]$ --- the
+patch's coarsened footprint in \emph{its parent's local cell space},
+1-based (the Fortran \code{mbounds}).  It drives everything
+\emph{vertical}: window/ring slices, restriction and load scatters,
+coefficient fill-down, correction windows.
+\item \code{lev.parent(p)} --- the index of \emph{the} parent patch on
+level $k{-}1$ ($0$ on the coarsest level); \code{lev.children\{q\}}
+lists the direct children.
+\end{itemize}
+
+The two systems are locked together: with $q=\code{parent}(p)$ and
+$\code{qb}=\code{box}(q,:)$,
+\[
+\code{mbounds}(p,:) =
+\Bigl[\tfrac{i_{lo}+1}{2},\ \tfrac{i_{hi}}{2},\
+      \tfrac{j_{lo}+1}{2},\ \tfrac{j_{hi}}{2}\Bigr]
+- \bigl[\code{qb}_1{-}1,\ \code{qb}_1{-}1,\ \code{qb}_3{-}1,\
+        \code{qb}_3{-}1\bigr],
+\]
+which requires the global box to be odd-start/even-end --- automatic,
+because a child is the exact $2\times$ refinement of a cluster box.
+\code{ebtTreeCheck}/\code{chsTreeCheck} verify this identity, the
+containment of \cref{inv:parent}, pairwise-disjoint siblings, the
+children/covered bookkeeping, and the ring nesting, on every hierarchy
+the test suites build.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.55]
+% parent patch grid
+\draw[step=1, bsgray!40, thin] (0,0) grid (12,8);
+\draw[very thick, bsgray] (0,0) rectangle (12,8);
+\node[font=\scriptsize\color{bsgray}, anchor=south west] at (0.1,8.1)
+  {parent patch $q$: local cells $1..12 \times 1..8$};
+% child footprint
+\fill[bslightblue, fill opacity=0.75] (3,2) rectangle (9,6);
+\draw[very thick, bsblue] (3,2) rectangle (9,6);
+\node[font=\scriptsize\color{bsblue}, align=center] at (6,4)
+  {child footprint\\$\code{mbounds}=[4\ 9\ 3\ 6]$};
+% ring
+\draw[very thick, bsorange, densely dashed] (2,1) rectangle (10,7);
+\node[font=\scriptsize\color{bsorange}, anchor=west] at (10.15,6.6)
+  {window ring};
+% brace for global coords
+\draw[decorate, decoration={brace, mirror, amplitude=4pt}, thick]
+  (3,-0.25) -- (9,-0.25)
+  node[midway, below=5pt, font=\scriptsize]
+  {child \code{box} (own level) $=[2\cdot 4{-}1+2(\code{qb}_1{-}1),\ \ldots]$};
+\end{tikzpicture}
+\caption{The lineage record.  The child's coarsened footprint
+(\code{mbounds}, blue) lies inside its single parent; the window ring
+(orange) extends one parent cell around it and never leaves the
+parent's \emph{padded} array --- where it exits the parent's interior
+it lands on the parent's own ghost cells.}
+\label{fig:coords}
+\end{figure}
+
+\section{The single-parent window}
+\label{sec:window}
+
+Let the child have footprint $[I_l..I_h]\times[J_l..J_h]$ in parent
+cells, $c_{m_x}=I_h{-}I_l{+}1$, $c_{m_y}=J_h{-}J_l{+}1$.  Since parent
+cell $(i,j)$ sits at padded index $(i{+}1, j{+}1)$ and $1\le I_l$,
+$I_h\le \code{parent.mx}$, the whole window
+\[
+W \;=\; \text{parent }Q\bigl(I_l : I_h{+}2,\ J_l : J_h{+}2\bigr)
+\]
+is a legal slice: rows $I_l$ and $I_h{+}2$ are the ring cells
+$I_l{-}1$ and $I_h{+}1$, which are parent \emph{ghost} cells exactly
+when the child touches the parent's edge.  This is the Fortran
+\code{InterpolateCoarseFine} contract verbatim: \emph{the child reads
+only \code{parent\%q}}; sibling and physical closures reach the child
+indirectly, through the parent's synchronized ghost layer.
+
+\begin{codepath}
+\code{ebtBuildOps} stores, per patch: \code{ops.win} (the window
+slice), \code{ops.ring} (its four perimeter slices, refreshed into
+\code{QC} before each QIF interpolation), \code{ops.usc}/\code{ops.fsc}
+(single-rect scatters of the restricted solution and the FAS load into
+the parent), \code{ops.pcc/pdew/pdns} (parent coefficient slices), and
+\code{ops.corrW/E/S/N} (flux-correction targets).  The V-cycle hot path
+(\code{ebtTransfer}, \code{ebtFillGhosts}, \code{ebtCoarseLoad},
+\code{ebtCoeffFilldown}) consists of sliced assignments against these
+descriptors.
+\end{codepath}
+
+\section{Per-parent Berger--Rigoutsos clustering}
+\label{sec:perparent}
+
+Regridding follows the Fortran pipeline
+(\code{bsamroutines.f90}: \code{AMR} $\to$ \code{EstimateLevelErrors}
+$\to$ \code{GridAdapt} $\to$ \code{RefineGrid} $\to$
+\code{NewSubGrids}) with one deliberate simplification
+(\cref{sec:nesting}):
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{Tag} on the current finest level, per patch
+(indicator of choice; the \code{CHStokesBSAMTree} documentation for its
+tagger).
+\item \textbf{Buffer globally.}  Tags are dilated by
+\code{TagBuffer} on the \emph{level-wide} mask, so a buffer that
+overflows a patch edge lands in the neighboring patch --- the Fortran
+\code{BufferAndList}/\code{InflateEdgeTags} broadcast, including the
+periodic wrap where applicable.
+\item \textbf{Clip for proper nesting} (\cref{sec:nesting}).
+\item \textbf{Cluster per parent.}  Berger--Rigoutsos signature
+splitting runs \emph{independently on each patch's own tags}
+(\code{RefineGrid} passes \code{NewSubGrids} the single patch's
+\code{errorflags}); candidate rectangles start from the tags' bounding
+box inside the patch and only ever shrink or split, so no cluster box
+can leave its parent --- \cref{inv:parent} holds by construction.
+\item \textbf{Refine.}  Each accepted box becomes one child (its exact
+$2\times$ refinement), tagged with its parent's index.
+\end{enumerate}
+
+Only the buffering is global; the clustering is local.  As in both
+parent codes there is \emph{no aspect-ratio constraint} --- boxes are
+free rectangles subject to \code{MinBoxWidth}, the fill-ratio target,
+and the nesting clip.
+
+\begin{cautionbox}
+Per-parent clustering fragments features that cross patch boundaries.
+Occasionally a fragment is a sliver (one cell wide after the nesting
+clip) that cannot grow within its parent; such boxes are merged into an
+adjacent box of the same parent when possible and otherwise dropped
+with a warning (\code{mergeOrDropThin}) --- locally \emph{less}
+refinement, never a fragile patch.  The append-only elliptic driver
+does not revisit dropped cells on older levels; coverage must be
+checked when resolving a prescribed region is required.  The nesting
+clip keeps the mesh 1-conforming.  The Fortran instead grows such boxes over untagged
+parent cells (its trim floor \code{minimumgridpoints} without an
+allowed-region concept), refining slightly more in these spots.
+\end{cautionbox}
+
+\section{Proper nesting without restarts}
+\label{sec:nesting}
+
+The Fortran enforces 2-level conformity \emph{a posteriori}: a
+patch-resolution level map (\code{levellandscape}) detects level-$L$
+patches adjacent to level-$(L{-}2)$ regions, and the mesh build restarts
+from level $L{-}2$ with augmented tags (\code{FindMeshDefects}, up to
+100 \code{amrrestarts}).  The MATLAB tree solvers instead \emph{prevent}
+defects: tags are clipped to cells whose full 8-neighborhood is covered
+by the current finest level (\code{erode8}; x-periodic in the
+CH--Stokes solver).  Consequences, all verified by the tree checkers:
+
+\begin{itemize}[leftmargin=2em]
+\item every ring cell of a child is covered by the parent level's
+patch union (or lies beyond a physical boundary), so the QIF stencil
+always reads synchronized coarse data;
+\item interface jumps are one level (1-conforming composite mesh);
+\item no rebuild loops --- each regrid pass is a single sweep.
+\end{itemize}
+
+% ======================================================================
+\chapter{Single-Parent Transfers in the Elliptic Solver}
+\label{ch:ebt}
+
+\code{EllipticBSAMTree} keeps the discretization, kernels, smoother,
+QIF/LIF interpolation, flux-balance corrections, composite residual and
+direct coarsest solve of \code{EllipticBSAM} \emph{unchanged}.  This
+chapter records only the moving parts that were rebuilt on the tree.
+
+\section{What changed relative to \code{EllipticBSAM}}
+
+\begin{center}\small
+\begin{tabular}{@{}p{0.3\textwidth}p{0.31\textwidth}p{0.31\textwidth}@{}}
+\toprule
+ & \code{EllipticBSAM} & \code{EllipticBSAMTree} \\
+\midrule
+clustering & level-global B--R & per-parent B--R (\cref{sec:perparent}) \\
+lineage & \code{parents\{p\}} list & \code{parent(p)} scalar + \code{mbounds} \\
+window/ring & per-cell gathers from all owners & one padded-parent slice \\
+restriction, FAS load & scatters over all intersecting owners & single-rect scatter into the parent \\
+coefficient fill-down & \code{rectIsect} over all coarse patches & sliced write into the parent + shared-face push (\cref{sec:sharedface}) \\
+correction targets & owner-map scatter & unchanged (targets may be the parent's siblings) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The flux-balance correction targets are the one place the tree still
+routes through an owner map: when a child touches its parent's edge,
+the coarse cell just outside the footprint belongs to a \emph{sibling
+of the parent}.  This is precomputed (\code{ops.corrW/E/S/N}), the
+static analogue of the Fortran's global \code{masscorrlayer} strip
+list.
+
+\section{The duplicated shared-face lesson}
+\label{sec:sharedface}
+
+\begin{cautionbox}
+Coarse patch boundary \emph{faces} are stored twice --- once in each
+abutting patch's face-coefficient array.  When a child's footprint
+touches its parent's edge, the coefficient fill-down (coarse face $D$
+$\leftarrow$ mean of the two overlying fine faces) must write the
+averaged value into \emph{both} copies, or the two sides of that face
+compute different fluxes and the discrete conservation identity breaks.
+\code{ebtCoeffFilldown} pushes boundary-face writes to the abutting
+siblings through the owner map (\code{pushFaceX/pushFaceY}).  The
+symptom when this is missing is instructive: a mass defect that
+\emph{floors} (does not shrink with tighter solver tolerance) and
+appears only for variable $D$ on adaptive meshes --- constant
+coefficients hide it, because the fill-down average then equals the
+analytic value.
+\end{cautionbox}
+
+\section{Verification}
+\label{sec:ebtverify}
+
+\code{tests/runAllTreeTests} reruns the entire \code{EllipticBSAM}
+suite (T1--T8) on the tree solver and adds T9:
+
+\begin{itemize}[leftmargin=2em]
+\item \textbf{T1--T7 parity.}  Identical numbers to the QC-ring solver:
+second-order $L^\infty$ rates (1.98--2.03) on uniform, box-in-box,
+L-shaped and fully adaptive hierarchies for QIF and LIF;
+$h$- and depth-independent V(3,3) factors $0.026$--$0.054$;
+conservation defects $7\cdot 10^{-17}$--$3\cdot 10^{-15}$.
+\item \textbf{T8 robustness.}  24 random tag disks; per-parent
+clustering yields 50 patches (QC-ring: 49) of minimum width 4, factor
+$0.052$, mass defect $1.1\cdot 10^{-13}$.
+\item \textbf{T9 tree invariants.}  \code{ebtTreeCheck} passes on the
+adaptive hierarchy, and the engineered straddling scenario (a tag
+centered on the shared edge of two coarse patches) produces exactly two
+children with parents $[1\ 2]$ --- never a multi-parent child --- with
+V-cycle factor $0.033$ and mass defect $9.5\cdot 10^{-13}$.
+\end{itemize}
+
+\begin{remark}
+The companion audit measured identical per-cycle factors for a
+multi-parent child (QC ring) and a single-parent child on the same
+mesh.  The tree buys structure and simplicity, not V-cycle speed; its
+performance value lies in the O(1) sliced transfers and in what it
+enables next --- the CH--Stokes solver's face-centered machinery would
+be substantially harder against multi-parent children.
+\end{remark}
+
+% ======================================================================
+\chapter{Verification}
+\label{ch:verify}
+
+\section{EllipticBSAMTree: runAllTreeTests}
+
+T1--T8 reproduce the \code{EllipticBSAM} suite on the tree
+(\cref{sec:ebtverify}); T9 validates the tree invariants and the
+per-parent splitting of a straddling feature.  Headline numbers
+(MATLAB R2026a): uniform and adaptive $L^\infty$ rates 1.98--2.03;
+V(3,3) factors 0.026--0.054 independent of $h$ and depth; conservation
+defects at roundoff ($10^{-16}$--$10^{-13}$); suite time
+$\approx37$\,s.
+
+\chapter{Mathematical and Diagnostic Clarifications}
+\label{ch:audit2026}
+\section{Compatibility is a source projection}
+For all-Neumann data and $C\equiv0$, the discrete source and the outward
+boundary derivative must satisfy
+\[
+ \sum_{i\in\mathcal V} h_{x,i}h_{y,i} f_i
+ +\sum_{F\subset\partial\Omega} A_F D_F g_F=0.
+\]
+\code{ebtCompatProject} subtracts the defect divided by the visible
+domain area from the original sampled source on every level.  The
+removed constant is \code{H.compatibility.sourceShift}; inspect it
+because incompatible data are thereby changed.  Per-level
+\code{sourceShift} bookkeeping ensures that previously projected
+coarse data and fresh fine data are treated consistently at every
+refinement.  Higher source quadrature improves the source integral;
+it is not exact for arbitrary data and does not by itself enforce the
+boundary-flux compatibility condition.
+
+\section{Reaction fixes the mean}
+Since $\mathcal L(u+a)=\mathcal Lu+Ca$, only the all-Neumann,
+$C\equiv0$ problem has an additive-constant gauge.  The error routine
+aligns the error mean exactly in this singular case, for every
+\code{SourceQuad}; otherwise it retains the absolute error.  The
+removed shift is \code{err.meanShift}.  A small positive reaction is
+not classified as zero using an absolute numerical threshold.
+\code{testEbtNeumannSemantics} verifies this rule and repeated
+refinement of a compatible quartic manufactured solution.
+
+\section{Proof boundaries for the actual QIF stencil}
+The tree changes data movement, not the stencil coefficients.  At a
+regular west QIF face,
+\[
+ Q_{1,3}=\tfrac8{15}Q^c_{1,2}+\tfrac23Q_{2,4}-\tfrac15Q_{3,5}.
+\]
+The equation for $Q_{2,3}$ therefore contains
+$+D Q_{3,5}/(5h_x^2)$.  This is a positive off-diagonal coefficient
+even for constant $D$ on a square grid, since $Q_{3,5}$ is not an
+ordinary nearest neighbor of $Q_{2,3}$.  Blanket $Z$-matrix and
+$M$-matrix claims for the fully eliminated multidimensional QIF
+operator are consequently unjustified.  Conservation follows from
+matching face fluxes; a comparison principle, energy estimate and
+uniform V-cycle bound need separate arguments.  The companion theory
+document's multidimensional sign lemma and conclusions depending on
+it remain proof-review items.
+
+The physical boundary fold gives exact point updates with neighbors
+fixed.  At coarse--fine interfaces, ghost interpolation is lagged
+within each color pass; global parity alone does not make this literal
+Gauss--Seidel on the fully eliminated, wider QIF stencil.  The reported
+contraction factors establish performance on the tested mesh families.
+
+\section{RL environment: what is measured}
+The \code{rl/} API can observe an unsolved root
+(\code{SolveRoot=false}), take individual cycles, and refine or polish
+the current hierarchy.  A stage observation supersedes the residual
+of any preceding single cycle.  \code{testRlState} verifies these
+transitions and rejection of non-finite or fractional box indices.
+
+The reward's relative-truncation-error proxy omits a two-cell margin
+around every patch and all patches narrower than eight cells.  A
+smaller proxy can therefore partly reflect a changed measurement
+region.  It is not a guaranteed discretization-error estimator; report
+true manufactured error, residual, visible cells and work alongside it.
+For noisy numeric forcing, comparison with the clean generating field
+includes data/interpolation error and is not error against an exact
+solution of the perturbed PDE.  Calibration-fit correlations describe
+the sampled calibration set, not an out-of-sample error guarantee.
+
+\section{Headless regression command}
+\begin{lstlisting}[language=bash]
+/Applications/MATLAB_R2026a.app/bin/matlab -batch "maxNumCompThreads(2); cd('EllipticBSAMTree/tests'); unitTreeKernels; runAllTreeTests; stressTreeInterfaces; testRlApi; testRlState; testEbtNeumannSemantics"
+\end{lstlisting}
+Keep the tree tests on an isolated MATLAB path to avoid the other
+package's \code{mmsCases}.  Historical positive-reaction Neumann error
+tables may use a mean-aligned error; rerun before comparing with the
+corrected absolute norms.  Dated audit logs preserve both versions.
+
+\chapter{Function Reference}
+
+\section{EllipticBSAMTree (\code{ebt*})}
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.50\textwidth}X@{}}
+\toprule
+function & responsibility \\
+\midrule
+\code{ebtSolve} & driver: setup, solve--tag--refine loop, outputs \\
+\code{ebtProblem}, \code{ebtOptions} & problem and option structs \\
+\code{ebtSetup}, \code{ebtMakeLevel} & hierarchy and per-patch fields (+ lineage) \\
+\code{ebtAddLevel} & append a level from per-parent cluster boxes \\
+\code{ebtTagCluster} & tagging, global buffer, nesting clip, per-parent B--R \\
+\code{ebtBuildOps} & owner maps, same-level exchange, single-parent descriptors \\
+\code{ebtFillGhosts}, \code{ebtInterpCf} & ghost priority order; QIF/LIF stencils \\
+\code{ebtTransfer} & restrict / ring / correct / filldown \\
+\code{ebtVcycle}, \code{ebtSolveCycles}, \code{ebtRelaxLevel} & AFAS engine \\
+\code{ebtCoarseLoad}, \code{ebtFaceCorrections} & FAS load + flux-balance corrections \\
+\code{ebtCoeffFilldown}, \code{ebtParentCoeffs}, \code{ebtGatherParentCoeffs} & coefficient compatibility \\
+\code{ebtCoarsest}, \code{ebtKernels}, \code{ebtBcFold} & level-1 solve; kernels; boundary fold \\
+\code{ebtCompResidual}, \code{ebtErrorNorms}, \code{ebtMassCheck} & diagnostics \\
+\code{ebtTreeCheck} & tree invariant validator \\
+\code{ebtPlot}, \code{ebtSample}, \code{ebtRte}, \code{ebtCompositeMean}, \code{ebtGatherWindow} & utilities \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{thebibliography}{9}
+\bibitem{feng2018}
+W.~Feng, Z.~Guo, J.~S.~Lowengrub, S.~M.~Wise,
+\emph{A mass-conservative adaptive FAS multigrid solver for
+cell-centered finite difference methods on block-structured,
+locally-cartesian grids},
+J.~Comput.~Phys.\ \textbf{352} (2018) 463--497.
+\bibitem{br1991}
+M.~J.~Berger, I.~Rigoutsos,
+\emph{An algorithm for point clustering and grid generation},
+IEEE Trans.\ Systems, Man, and Cybernetics \textbf{21} (1991)
+1278--1286.
+\bibitem{vanka1986}
+S.~P.~Vanka,
+\emph{Block-implicit multigrid solution of Navier-Stokes equations in
+primitive variables},
+J.~Comput.~Phys.\ \textbf{65} (1986) 138--158.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,55 @@
+{
+  "mode": "full",
+  "matlab": "26.1.0.3276743 (R2026a) Update 3",
+  "epsilon": 0.05,
+  "alpha": 3,
+  "beta": 2,
+  "gamma": 1,
+  "kappa": 0.01,
+  "boundaryPoints": 3000,
+  "baseCells": 64,
+  "finestEquivalent": 1024,
+  "levels": 5,
+  "visibleCells": 408562,
+  "storedAmrCells": 543384,
+  "uniformCells": 1.048576E+6,
+  "cellFraction": 0.38963508605957031,
+  "vcycles": 10,
+  "relativeResidual": 2.552382647294915E-11,
+  "balanceDefect": 4.8660424788798515E-15,
+  "setupAndSolveSeconds": 11.071348416666666,
+  "interfaceBandCells": 97671,
+  "uncoveredBandCells": 0,
+  "hOverEpsilon": 0.078125,
+  "patchesPerLevel": [
+    1,
+    3,
+    27,
+    114,
+    378
+  ],
+  "cellsPerLevel": [
+    4096,
+    11328,
+    33668,
+    114756,
+    379536
+  ],
+  "relativeL2VsUniform1024": 0.00010615648122087239,
+  "linfVsUniform1024": 0.00067195675256725984,
+  "uniformGridSizes": [
+    512,
+    1024
+  ],
+  "uniformRelativeResiduals": [
+    1.8160672387326842E-11,
+    2.6406147776461424E-11
+  ],
+  "uniformSetupAndSolveSeconds": [
+    3.57724375,
+    12.450023166666666
+  ],
+  "uniform512To1024RelativeL2": 3.9587134436951553E-5,
+  "comparison": "Uniform 1024 cell averages restricted to visible AMR cells; fixed epsilon.",
+  "acceptanceRelativeL2": 0.001
+}

@@ -1,0 +1,125 @@
+BSAM in MATLAB: elliptic (QC-ring/tree), parabolic, diffuse domain.
+BSAM in MATLAB: elliptic (QC-ring/tree), parabolic, diffuse domain.
+[ebsam] added level 2 (3 patch(es), 11328 cells, h = 3.125e-02)
+[ebsam] added level 3 (27 patch(es), 33668 cells, h = 1.562e-02)
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[ebsam] added level 4 (114 patch(es), 114756 cells, h = 7.812e-03)
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In demoStarfish (line 18)] 
+[ebsam] added level 5 (378 patch(es), 379536 cells, h = 3.906e-03)
+[ebsam] stage 1: 5 AMR level(s), 10 V-cycle(s), |r|/|f| = 2.55e-11, avg factor 0.087, 408562 visible cells
+[ebsam] stage 1: 1 AMR level(s), 10 V-cycle(s), |r|/|f| = 1.82e-11, avg factor 0.084, 262144 visible cells
+[ebsam] stage 1: 1 AMR level(s), 10 V-cycle(s), |r|/|f| = 2.64e-11, avg factor 0.088, 1048576 visible cells
+[Warning: Vectorized content might take a long time to create, or it might
+contain unexpected results. Set 'ContentType' to 'image' for better
+performance. Click here to not see this
+message again.] 
+STARFISH FULL PASSED: 408562 active cells, 39.0% of uniform, residual 2.552e-11.
+                           mode: 'full'
+                         matlab: '26.1.0.3276743 (R2026a) Update 3'
+                        epsilon: 0.0500
+                          alpha: 3
+                           beta: 2
+                          gamma: 1
+                          kappa: 0.0100
+                 boundaryPoints: 3000
+                      baseCells: 64
+               finestEquivalent: 1024
+                         levels: 5
+                   visibleCells: 408562
+                 storedAmrCells: 543384
+                   uniformCells: 1048576
+                   cellFraction: 0.3896
+                        vcycles: 10
+               relativeResidual: 2.5524e-11
+                  balanceDefect: 4.8660e-15
+           setupAndSolveSeconds: 11.0713
+             interfaceBandCells: 97671
+             uncoveredBandCells: 0
+                   hOverEpsilon: 0.0781
+                patchesPerLevel: [1 3 27 114 378]
+                  cellsPerLevel: [4096 11328 33668 114756 379536]
+        relativeL2VsUniform1024: 1.0616e-04
+              linfVsUniform1024: 6.7196e-04
+               uniformGridSizes: [512 1024]
+       uniformRelativeResiduals: [1.8161e-11 2.6406e-11]
+    uniformSetupAndSolveSeconds: [3.5772 12.4500]
+     uniform512To1024RelativeL2: 3.9587e-05
+                     comparison: 'Uniform 1024 cell averages restricted to visible AMR cells; fixed epsilon.'
+           acceptanceRelativeL2: 1.0000e-03
+

@@ -1,0 +1,101 @@
+\section{Which Neumann problems have a gauge?}
+For $\mathcal L u=-\nabla\cdot(D\nabla u)+Cu$ and a constant $a$,
+\[
+  \mathcal L(u+a)=\mathcal L u+Ca.
+\]
+Thus Neumann boundary conditions alone do not give a gauge.  If
+$C\not\equiv0$, shifting the solution changes the equation.  Subtracting
+the mean of the error would hide a real error; for example, the constant
+field $u_h=7$ compared with $u=0$ has error $7$, not zero.  For
+$C\equiv0$ and all-Neumann data, error is compared modulo constants using
+the visible-cell volume weights.  This distinction is independent of
+source quadrature.  The regression \code{testEbNeumannSemantics} checks
+both cases, including \code{SourceQuad=3} and the well-conditioned scaled
+problem $D=10^{-18}$, $C=f=10^{-14}$, $g=0$, whose solution is $u=1$.
+
+\section{Compatibility after every refinement}
+Let $V_i=h_{x,i}h_{y,i}$ denote a visible cell's area and $A_F$ a
+physical boundary face's length.  With outward derivative data $g_F$,
+the singular conservative equations require
+\[
+ S+J=0,\qquad S=\sum_{i\in\vis}V_i f_i^{\rm raw},\qquad
+ J=\sum_{F\subset\partial\Omega} A_F D_F g_F.
+\]
+The implementation computes
+\[
+ c_H=\frac{S+J}{\sum_{i\in\vis}V_i},\qquad
+ f_i^{\rm projected}=f_i^{\rm raw}-c_H.
+\]
+It records $c_H$ in \code{H.compatibility.sourceShift} and $S+J$ in
+\code{H.compatibility.unprojectedDefect}.  Each level's
+\code{sourceShift} records the constant already removed from its
+\code{FTrue}.  A fresh level starts at zero.  Reprojection restores the
+old shift in the composite sum and applies the difference between the
+new and old shifts, so every level represents the same projected source.
+Without this bookkeeping, successive refinements introduce different
+constant source perturbations on different levels even when the final
+global mass defect is small.
+
+For smoothly compatible continuous data, midpoint source and boundary
+quadrature normally make $c_H=O(h_{\max}^2)$ on a controlled mesh family.
+For incompatible data it may be $O(1)$: projection then solves a changed
+problem.  Tensor Gauss quadrature improves source integration but is not
+exact for arbitrary functions and does not improve the separately
+sampled Neumann boundary flux automatically.
+
+\section{A multidimensional QIF sign counterexample}
+Take constant $D>0$ and a west coarse--fine face away from tangential
+end exceptions.  In the padded fine array, \code{ebInterpCf} writes
+\[
+ Q_{1,3}=\frac8{15}Q^c_{1,2}+\frac23Q_{2,4}-\frac15Q_{3,5}.
+\]
+The operator row for interior value $Q_{2,3}$ contains the term
+$-D Q_{1,3}/h_x^2$.  Therefore the coefficient of the distinct interior
+unknown $Q_{3,5}$ in that row is
+\[
+  +\frac{D}{5h_x^2}>0.
+\]
+That unknown is not one of the row's four ordinary nearest neighbors,
+so no nearest-neighbor diffusion coefficient cancels it.  This remains
+true for constant coefficients and square cells.  Consequently the
+fully ghost-eliminated multidimensional QIF matrix is not, in general,
+a $Z$-matrix.  A one-dimensional normal-stencil sign argument cannot be
+applied to this diagonal stencil.  Any comparison principle, inverse
+positivity result, or energy estimate must be justified for the actual
+composite operator; flux conservation alone does not establish it.
+
+The existing \code{convergence\_theory.tex/pdf} is retained separately.
+Its multidimensional sign claim and the theorems relying on that claim
+require further proof work; they should not be treated as verified
+theorems for this implementation.  The measured convergence tables are
+finite numerical evidence.  They neither prove a uniform V-cycle bound
+nor control arbitrary interface geometry, coefficient contrast, or an
+unbounded number of patches.
+
+\section{What the diagnostics establish}
+The composite residual includes the flux correction and measures
+algebraic error.  At any synchronized state, the conservative mass
+defect equals minus the volume sum of that residual, up to roundoff.
+It can therefore be small through cancellation while the maximum
+residual remains large.  Always report both.  The error norm adds an
+independent comparison with a correctly manufactured solution.
+
+The \code{ulap} indicator is
+$\sqrt{(\delta_x^2u)^2+(\delta_y^2u)^2}$, with undivided differences;
+it is a refinement heuristic, not a rigorous error bound.  Proper
+nesting and minimum-width handling may drop tags.  Moreover, the driver
+only appends a new finest level: it does not revisit dropped tags on
+older levels or coarsen an existing hierarchy.  Inspect the resulting
+visible-cell coverage when a particular region must be resolved.
+
+\section{Reproducible command-line checks}
+From the repository root on the audited macOS installation:
+\begin{lstlisting}[language=bash]
+/Applications/MATLAB_R2026a.app/bin/matlab -batch "maxNumCompThreads(2); cd('EllipticBSAM/tests'); unitKernels; runAllTests; auditExtras; stressInterfaces; testNeumannCompat; testEbNeumannSemantics"
+\end{lstlisting}
+Use a separate MATLAB path for each solver's test directory: both 2D
+packages define \code{mmsCases}.  The September 2026 evidence under
+\code{Audit/2026-09-10/} distinguishes existing suite results from the
+new regression tests.  Historical all-Neumann, positive-reaction error
+tables may have removed the error mean; rerun them before comparing
+absolute errors with the corrected diagnostics.

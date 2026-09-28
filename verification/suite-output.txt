@@ -1,0 +1,255 @@
+testEbNeumannSemantics PASSED: gauge, scaled reaction, two regrids; finalRel=1.599e-10
+
+=== T1: uniform MMS, variable D(x,y), C(x,y), Dirichlet =========
+  m=  32  err_inf=3.2899e-04  err_l2=1.2777e-04  factor=0.026  V=9  t=0.07s
+  m=  64  err_inf=8.3106e-05  err_l2=3.2433e-05  factor=0.035  V=10  t=0.07s
+  m= 128  err_inf=2.0863e-05  err_l2=8.1849e-06  factor=0.042  V=11  t=0.12s
+  m= 256  err_inf=5.2253e-06  err_l2=2.0568e-06  factor=0.043  V=11  t=0.18s
+  L_inf rates: [1.98 1.99 2]
+
+=== T2: uniform pure-Neumann singular Poisson ====================
+  m=  32  err_inf=3.1880e-03  err_l2=1.6095e-03  factor=0.030  V=8
+  m=  64  err_inf=8.0164e-04  err_l2=4.0179e-04  factor=0.039  V=8
+  m= 128  err_inf=2.0070e-04  err_l2=1.0041e-04  factor=0.045  V=9
+  m= 256  err_inf=5.0193e-05  err_l2=2.5100e-05  factor=0.047  V=9
+  L_inf rates: [1.99 2 2]
+
+=== T3: fixed box-in-box hierarchies (paper Tables 2/3) ==========
+  [qif] m0=  32 L=2: err=5.9510e-03 factor=0.045 mass=2.0e-16 V=8 t=0.1s
+  [qif] m0=  32 L=3: err=9.1031e-03 factor=0.050 mass=1.9e-16 V=8 t=0.1s
+  [qif] m0=  32 L=4: err=4.4496e-03 factor=0.052 mass=1.5e-16 V=8 t=0.1s
+  [qif] m0=  64 L=2: err=1.5066e-03 factor=0.050 mass=7.2e-17 V=8 t=0.1s
+  [qif] m0=  64 L=3: err=2.2864e-03 factor=0.052 mass=1.4e-16 V=8 t=0.1s
+  [qif] m0=  64 L=4: err=1.1203e-03 factor=0.053 mass=4.0e-16 V=8 t=0.1s
+  [qif] m0= 128 L=2: err=3.7786e-04 factor=0.052 mass=6.8e-16 V=8 t=0.1s
+  [qif] m0= 128 L=3: err=5.7235e-04 factor=0.053 mass=1.2e-15 V=8 t=0.2s
+  [qif] m0= 128 L=4: err=2.8060e-04 factor=0.053 mass=1.2e-15 V=8 t=0.2s
+  [qif] m0= 256 L=2: err=9.4541e-05 factor=0.053 mass=1.2e-16 V=8 t=0.2s
+  [qif] m0= 256 L=3: err=1.4314e-04 factor=0.053 mass=6.8e-17 V=8 t=0.5s
+  [qif] m0= 256 L=4: err=7.0189e-05 factor=0.054 mass=3.0e-16 V=8 t=0.7s
+  [qif] rates (2/3/4-level): [1.98 1.99 1.99;2 2 2;2 2 2]
+  [lif] m0=  32 L=2: err=5.9600e-03 factor=0.045 mass=1.1e-16 V=8 t=0.0s
+  [lif] m0=  32 L=3: err=9.2284e-03 factor=0.050 mass=2.9e-16 V=8 t=0.0s
+  [lif] m0=  32 L=4: err=4.8757e-03 factor=0.052 mass=5.0e-16 V=8 t=0.1s
+  [lif] m0=  64 L=2: err=1.5087e-03 factor=0.050 mass=7.7e-17 V=8 t=0.0s
+  [lif] m0=  64 L=3: err=2.3165e-03 factor=0.052 mass=2.4e-16 V=8 t=0.1s
+  [lif] m0=  64 L=4: err=1.2258e-03 factor=0.053 mass=1.5e-15 V=8 t=0.1s
+  [lif] m0= 128 L=2: err=3.7835e-04 factor=0.052 mass=1.1e-15 V=8 t=0.1s
+  [lif] m0= 128 L=3: err=5.7971e-04 factor=0.053 mass=2.5e-16 V=8 t=0.2s
+  [lif] m0= 128 L=4: err=3.0687e-04 factor=0.053 mass=3.2e-15 V=8 t=0.2s
+  [lif] m0= 256 L=2: err=9.4661e-05 factor=0.053 mass=1.1e-16 V=8 t=0.2s
+  [lif] m0= 256 L=3: err=1.4496e-04 factor=0.053 mass=2.9e-16 V=8 t=0.4s
+  [lif] m0= 256 L=4: err=7.6741e-05 factor=0.054 mass=1.5e-16 V=8 t=0.7s
+  [lif] rates (2/3/4-level): [1.98 1.99 1.99;2 2 2;2 2 2]
+
+=== T4: L-shaped refinement patch (paper Table 5) ================
+  m0=  16  err_inf=5.6702e-03  factor=0.040  level-2 patches=1  mass=6.8e-15
+  m0=  32  err_inf=1.6395e-03  factor=0.035  level-2 patches=2  mass=6.7e-13
+  m0=  64  err_inf=3.9990e-04  factor=0.032  level-2 patches=2  mass=2.3e-11
+  m0= 128  err_inf=9.8385e-05  factor=0.037  level-2 patches=2  mass=7.2e-12
+  m0= 256  err_inf=2.4393e-05  factor=0.039  level-2 patches=2  mass=1.5e-12
+  L_inf rates: [1.79 2.04 2.02 2.01]
+
+=== T5: fully adaptive (undivided-Laplacian tagging) =============
+  MaxLevels=1 (got 1): err_inf=7.6067e-02  err_l2=3.3243e-03  factor=0.028  dof=4096  t=0.0s
+  MaxLevels=2 (got 2): err_inf=1.9499e-02  err_l2=7.8318e-04  factor=0.030  dof=5776  t=0.1s
+  MaxLevels=3 (got 3): err_inf=4.7743e-03  err_l2=1.9405e-04  factor=0.038  dof=10399  t=0.2s
+  MaxLevels=4 (got 4): err_inf=1.2691e-03  err_l2=6.1951e-05  factor=0.039  dof=25528  t=0.2s
+  err_inf decrease factors per added level: [0.256 0.245 0.266]
+
+=== T6: h-independence of the V-cycle (2-level, paper Fig 8) =====
+  m0 = [32 64 128 256]
+  factors = [0.045 0.0505 0.0522 0.0527]
+
+=== T7: discrete mass conservation (QIF vs no corrections) =======
+  levels=2  corrections=1 : mass defect (rel) = 1.379e-16   err=1.507e-03
+  levels=2  corrections=0 : mass defect (rel) = 2.310e-05   err=2.330e-03
+  levels=3  corrections=1 : mass defect (rel) = 5.206e-16   err=2.286e-03
+  levels=3  corrections=0 : mass defect (rel) = 2.948e-04   err=1.289e-02
+
+=== T8: pathological scattered tagging robustness =================
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','eb_tag_cluster:dropthin')] 
+[> In ebTagCluster>mergeOrDropThin (line 351)
+In ebTagCluster (line 109)
+In ebSolve (line 34)
+In runAllTests (line 215)
+In runVerification>runOne (line 22)
+In runVerification (line 15)] 
+  patches=49  min width=4 (fine cells)  factor=0.053  err=8.3811e-05  mass=1.1e-13
+
+Total suite time: 21.1 s
+ALL FOLDER-1 TESTS PASSED
+testEbtNeumannSemantics PASSED: gauge, scaled reaction, two regrids; finalRel=1.599e-10
+
+=== T1: uniform MMS, variable D(x,y), C(x,y), Dirichlet =========
+  m=  32  err_inf=3.2899e-04  err_l2=1.2777e-04  factor=0.026  V=9  t=0.06s
+  m=  64  err_inf=8.3106e-05  err_l2=3.2433e-05  factor=0.035  V=10  t=0.10s
+  m= 128  err_inf=2.0863e-05  err_l2=8.1849e-06  factor=0.042  V=11  t=0.14s
+  m= 256  err_inf=5.2253e-06  err_l2=2.0568e-06  factor=0.043  V=11  t=0.20s
+  L_inf rates: [1.98 1.99 2]
+
+=== T2: uniform pure-Neumann singular Poisson ====================
+  m=  32  err_inf=3.1880e-03  err_l2=1.6095e-03  factor=0.030  V=8
+  m=  64  err_inf=8.0164e-04  err_l2=4.0179e-04  factor=0.039  V=8
+  m= 128  err_inf=2.0070e-04  err_l2=1.0041e-04  factor=0.045  V=9
+  m= 256  err_inf=5.0193e-05  err_l2=2.5100e-05  factor=0.047  V=9
+  L_inf rates: [1.99 2 2]
+
+=== T3: fixed box-in-box hierarchies (paper Tables 2/3) ==========
+  [qif] m0=  32 L=2: err=5.9510e-03 factor=0.045 mass=2.0e-16 V=8 t=0.1s
+  [qif] m0=  32 L=3: err=9.1031e-03 factor=0.050 mass=1.9e-16 V=8 t=0.1s
+  [qif] m0=  32 L=4: err=4.4496e-03 factor=0.052 mass=1.5e-16 V=8 t=0.1s
+  [qif] m0=  64 L=2: err=1.5066e-03 factor=0.050 mass=7.2e-17 V=8 t=0.1s
+  [qif] m0=  64 L=3: err=2.2864e-03 factor=0.052 mass=1.4e-16 V=8 t=0.1s
+  [qif] m0=  64 L=4: err=1.1203e-03 factor=0.053 mass=4.0e-16 V=8 t=0.1s
+  [qif] m0= 128 L=2: err=3.7786e-04 factor=0.052 mass=6.8e-16 V=8 t=0.1s
+  [qif] m0= 128 L=3: err=5.7235e-04 factor=0.053 mass=1.2e-15 V=8 t=0.2s
+  [qif] m0= 128 L=4: err=2.8060e-04 factor=0.053 mass=1.2e-15 V=8 t=0.3s
+  [qif] m0= 256 L=2: err=9.4541e-05 factor=0.053 mass=1.2e-16 V=8 t=0.2s
+  [qif] m0= 256 L=3: err=1.4314e-04 factor=0.053 mass=6.8e-17 V=8 t=0.5s
+  [qif] m0= 256 L=4: err=7.0189e-05 factor=0.054 mass=3.0e-16 V=8 t=0.7s
+  [qif] rates (2/3/4-level): [1.98 1.99 1.99;2 2 2;2 2 2]
+  [lif] m0=  32 L=2: err=5.9600e-03 factor=0.045 mass=1.1e-16 V=8 t=0.1s
+  [lif] m0=  32 L=3: err=9.2284e-03 factor=0.050 mass=2.9e-16 V=8 t=0.0s
+  [lif] m0=  32 L=4: err=4.8757e-03 factor=0.052 mass=5.0e-16 V=8 t=0.1s
+  [lif] m0=  64 L=2: err=1.5087e-03 factor=0.050 mass=7.7e-17 V=8 t=0.0s
+  [lif] m0=  64 L=3: err=2.3165e-03 factor=0.052 mass=2.4e-16 V=8 t=0.1s
+  [lif] m0=  64 L=4: err=1.2258e-03 factor=0.053 mass=1.5e-15 V=8 t=0.1s
+  [lif] m0= 128 L=2: err=3.7835e-04 factor=0.052 mass=1.1e-15 V=8 t=0.1s
+  [lif] m0= 128 L=3: err=5.7971e-04 factor=0.053 mass=2.5e-16 V=8 t=0.2s
+  [lif] m0= 128 L=4: err=3.0687e-04 factor=0.053 mass=3.2e-15 V=8 t=0.2s
+  [lif] m0= 256 L=2: err=9.4661e-05 factor=0.053 mass=1.1e-16 V=8 t=0.2s
+  [lif] m0= 256 L=3: err=1.4496e-04 factor=0.053 mass=2.9e-16 V=8 t=0.4s
+  [lif] m0= 256 L=4: err=7.6741e-05 factor=0.054 mass=1.5e-16 V=8 t=0.7s
+  [lif] rates (2/3/4-level): [1.98 1.99 1.99;2 2 2;2 2 2]
+
+=== T4: L-shaped refinement patch (paper Table 5) ================
+  m0=  16  err_inf=5.6702e-03  factor=0.040  level-2 patches=1  mass=6.8e-15
+  m0=  32  err_inf=1.6395e-03  factor=0.035  level-2 patches=2  mass=6.7e-13
+  m0=  64  err_inf=3.9990e-04  factor=0.032  level-2 patches=2  mass=2.3e-11
+  m0= 128  err_inf=9.8385e-05  factor=0.037  level-2 patches=2  mass=7.2e-12
+  m0= 256  err_inf=2.4393e-05  factor=0.039  level-2 patches=2  mass=1.5e-12
+  L_inf rates: [1.79 2.04 2.02 2.01]
+
+=== T5: fully adaptive (undivided-Laplacian tagging) =============
+  MaxLevels=1 (got 1): err_inf=7.6067e-02  err_l2=3.3243e-03  factor=0.028  dof=4096  t=0.0s
+  MaxLevels=2 (got 2): err_inf=1.9499e-02  err_l2=7.8318e-04  factor=0.030  dof=5776  t=0.1s
+  MaxLevels=3 (got 3): err_inf=4.7743e-03  err_l2=1.9405e-04  factor=0.038  dof=10399  t=0.2s
+  MaxLevels=4 (got 4): err_inf=1.2691e-03  err_l2=6.1951e-05  factor=0.039  dof=25528  t=0.2s
+  err_inf decrease factors per added level: [0.256 0.245 0.266]
+
+=== T6: h-independence of the V-cycle (2-level, paper Fig 8) =====
+  m0 = [32 64 128 256]
+  factors = [0.045 0.0505 0.0522 0.0527]
+
+=== T7: discrete mass conservation (QIF vs no corrections) =======
+  levels=2  corrections=1 : mass defect (rel) = 1.379e-16   err=1.507e-03
+  levels=2  corrections=0 : mass defect (rel) = 2.310e-05   err=2.330e-03
+  levels=3  corrections=1 : mass defect (rel) = 5.206e-16   err=2.286e-03
+  levels=3  corrections=0 : mass defect (rel) = 2.948e-04   err=1.289e-02
+
+=== T8: pathological scattered tagging robustness =================
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','ebt_tag_cluster:dropthin')] 
+[> In ebtTagCluster>mergeOrDropThin (line 373)
+In ebtTagCluster (line 122)
+In ebtSolve (line 36)
+In runAllTreeTests (line 220)
+In runVerification>runOne (line 22)
+In runVerification (line 15)] 
+[Warning: dropping an ungrowable sliver cluster box (less local refinement);
+disable with warning('off','ebt_tag_cluster:dropthin')] 
+[> In ebtTagCluster>mergeOrDropThin (line 373)
+In ebtTagCluster (line 122)
+In ebtSolve (line 36)
+In runAllTreeTests (line 220)
+In runVerification>runOne (line 22)
+In runVerification (line 15)] 
+  patches=50  min width=4 (fine cells)  factor=0.053  err=8.3718e-05  mass=1.1e-13
+
+=== T9: strict single-parent tree invariants ======================
+  T5 hierarchy: 4 AMR level(s), per-level patches [1 3 3 3], max children 3 -> invariants OK
+  straddle scenario: level-2 patches=2, level-3 patches=2, parents=[1 2]
+  solver: V=9 rel=3.64e-12 factor=0.033 mass=9.5e-13 err=2.474e-04
+
+Total suite time: 15.6 s
+ALL TREE TESTS PASSED
+PASS CN time-dependent C: errors [0.000359769 8.98676e-05 2.24623e-05 5.61527e-06]; rates [2.0012 2.0003 2.0001]
+PASS CN time-dependent D/BC: Cauchy [7.6541e-05 1.80441e-05 4.53075e-06]; rates [2.0847 1.9937]
+PASS CN composite mass: regrid=0 drift=1.859e-13 rel=1.157e-12
+PASS CN composite mass: regrid=2 drift=1.859e-13 rel=1.157e-12
+ALL PARABOLIC REGRESSIONS PASSED
+
+=== P1: traveling-bump MMS, temporal orders =======================
+  -- P1a: Dt-Cauchy on fixed uniform 128^2 --
+  be    Cauchy diffs [0.00123 0.000619 0.00031]  rates [0.992 0.998]
+  bdf2  Cauchy diffs [0.000357 9.02e-05 2.26e-05]  rates [1.98 2]
+  cn    Cauchy diffs [0.0104 0.00264 0.000654]  rates [1.97 2.01]
+  -- P1b: joint refinement with AMR + regrids (BDF2) --
+  bdf2  h=1/64  Dt=0.05     err_inf=8.1941e-03  <V>=7.0  regrids=3  t=0.1s
+  bdf2  h=1/128 Dt=0.025    err_inf=2.3016e-03  <V>=7.0  regrids=7  t=0.4s
+  bdf2  h=1/256 Dt=0.0125   err_inf=6.3286e-04  <V>=7.0  regrids=15  t=1.5s
+  joint rates: [1.83 1.86]
+
+=== P2: heat equation mass conservation across regrids ============
+[ebsam-p] step   50/200  t=0.1000  V=4  rel=7.1e-11  levels=1  cells=4096  mass=5.126920e-01
+[ebsam-p] step  100/200  t=0.2000  V=3  rel=6.4e-10  levels=1  cells=4096  mass=5.126920e-01
+[ebsam-p] step  150/200  t=0.3000  V=3  rel=1.8e-10  levels=1  cells=4096  mass=5.126920e-01
+[ebsam-p] step  200/200  t=0.4000  V=3  rel=6.5e-11  levels=1  cells=4096  mass=5.126920e-01
+  steps=200  regrids=39  <V/step>=3.5  mass drift=1.091e-10 (mass=0.5127)
+  final levels: 1 (started with 3 - derefinement as u smooths)
+
+=== P3: moving heat source - mesh tracking ========================
+  source at t=1: (0.720, 0.500); finest level covers it: 1
+  cells=5668 (uniform 256^2 would be 65536), regrids=49, <V>=5.8
+
+=== P4: warm-start efficiency and large-Dt stability ==============
+  P2 mean V-cycles/step: 3.51
+  BE with Dt=0.1 (5 steps): max|u| = 0.513 (bounded, no ringing)
+
+Total parabolic suite time: 24.5 s
+ALL PARABOLIC TESTS PASSED
+PASS polygon edge normals and independent signed-distance derivatives
+PASS diffuse flux/source sign, finite-difference residual 4.125e-09
+ALL DIFFUSE-DOMAIN REGRESSIONS PASSED
+
+=== D1: star-shaped domain, Neumann DDM (paper Table 6) ==========
+  eps=0.80  uni(L2)=1.063e-03  amr(L2)=1.063e-03  noCorr(L2)=1.063e-03 | mass: 2e-13 / 2e-13 / 2e-13 | amr factor 0.053 | t_amr/t_uni=1.15
+  eps=0.40  uni(L2)=2.510e-05  amr(L2)=2.510e-05  noCorr(L2)=2.510e-05 | mass: 4e-15 / 4e-15 / 4e-10 | amr factor 0.082 | t_amr/t_uni=1.88
+  eps=0.20  uni(L2)=8.470e-06  amr(L2)=8.470e-06  noCorr(L2)=8.469e-06 | mass: 1e-14 / 1e-14 / 4e-10 | amr factor 0.105 | t_amr/t_uni=1.28
+  eps=0.10  uni(L2)=3.029e-06  amr(L2)=3.027e-06  noCorr(L2)=5.210e-03 | mass: 9e-14 / 1e-13 / 2e-03 | amr factor 0.135 | t_amr/t_uni=1.65
+  eps=0.05  uni(L2)=1.073e-06  amr(L2)=1.084e-06  noCorr(L2)=6.838e-03 | mass: 8e-13 / 9e-13 / 2e-03 | amr factor 0.163 | t_amr/t_uni=1.50
+  L2 rates in eps:  uniform [5.4 1.6 1.5 1.5] | adaptive [5.4 1.6 1.5 1.5] | no-corr [5.4 1.6 -9.3 -0.39]
+  |amr - uniform| / uniform (L2): [0 1.3e-05 5.1e-05 0.00063 0.011]
+
+=== D1b: circle, Neumann DDM: model error via extrapolation ======
+  eps=0.40  E(eps/h=12.8)=2.413e-02  E(25.6)=2.411e-02  h-rate=0.00  model M=2.410e-02
+  eps=0.20  E(eps/h=12.8)=6.312e-03  E(25.6)=6.303e-03  h-rate=0.00  model M=6.300e-03
+  eps=0.10  E(eps/h=12.8)=1.602e-03  E(25.6)=1.603e-03  h-rate=-0.00  model M=1.604e-03
+  model-error rates in eps: [1.9 2]
+
+=== D2: disc, Dirichlet penalty DDM ==============================
+  eps=0.400  L2=1.428e+00  Linf=8.071e-01  factor=0.086  dof=9216
+  eps=0.200  L2=4.055e-01  Linf=2.297e-01  factor=0.143  dof=36864
+  eps=0.100  L2=9.419e-02  Linf=6.110e-02  factor=0.221  dof=73971
+  eps=0.050  L2=7.523e-03  Linf=1.488e-02  factor=0.283  dof=163797
+  L2 rates in eps: [1.8 2.1 3.6]
+
+=== D3: efficiency, adaptive vs uniform ===========================
+  eps    cells(uni)  cells(amr)  ratio   t_uni    t_amr
+  0.80       16384      16384    1.0x     0.08s    0.10s
+  0.40       65536      53980    1.2x     0.15s    0.28s
+  0.20      262144     109606    2.4x     0.43s    0.54s
+  0.10     1048576     211183    5.0x     1.52s    2.50s
+  0.05     4194304     433789    9.7x     6.41s    9.64s
+  adaptive V-cycle factors across eps: [0.053 0.082 0.1 0.14 0.16]
+
+Total DD suite time: 48.3 s
+ALL FOLDER-2 TESTS PASSED
+BSAM in MATLAB: elliptic (QC-ring/tree), parabolic, diffuse domain.
+PASS starfish distance: 300 independent point-to-segment/sign checks.
+PASS transmission constant solution: Linf 4.263e-14, residual 3.183e-12.
+ALL STARFISH REGRESSIONS PASSED
+
+ALL BSAM PORTFOLIO VERIFICATION SUITES PASSED
