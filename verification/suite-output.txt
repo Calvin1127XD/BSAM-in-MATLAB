@@ -69,13 +69,13 @@ testEbNeumannSemantics PASSED: gauge, scaled reaction, two regrids; finalRel=1.5
 
 === T8: pathological scattered tagging robustness =================
 [Warning: dropping an ungrowable sliver cluster box (less local refinement);
-disable with warning('off','eb_tag_cluster:dropthin')] 
+disable with warning('off','eb_tag_cluster:dropthin')]
 [> In ebTagCluster>mergeOrDropThin (line 351)
 In ebTagCluster (line 109)
 In ebSolve (line 34)
 In runAllTests (line 215)
 In runVerification>runOne (line 22)
-In runVerification (line 15)] 
+In runVerification (line 15)]
   patches=49  min width=4 (fine cells)  factor=0.053  err=8.3811e-05  mass=1.1e-13
 
 Total suite time: 21.1 s
@@ -151,21 +151,21 @@ testEbtNeumannSemantics PASSED: gauge, scaled reaction, two regrids; finalRel=1.
 
 === T8: pathological scattered tagging robustness =================
 [Warning: dropping an ungrowable sliver cluster box (less local refinement);
-disable with warning('off','ebt_tag_cluster:dropthin')] 
+disable with warning('off','ebt_tag_cluster:dropthin')]
 [> In ebtTagCluster>mergeOrDropThin (line 373)
 In ebtTagCluster (line 122)
 In ebtSolve (line 36)
 In runAllTreeTests (line 220)
 In runVerification>runOne (line 22)
-In runVerification (line 15)] 
+In runVerification (line 15)]
 [Warning: dropping an ungrowable sliver cluster box (less local refinement);
-disable with warning('off','ebt_tag_cluster:dropthin')] 
+disable with warning('off','ebt_tag_cluster:dropthin')]
 [> In ebtTagCluster>mergeOrDropThin (line 373)
 In ebtTagCluster (line 122)
 In ebtSolve (line 36)
 In runAllTreeTests (line 220)
 In runVerification>runOne (line 22)
-In runVerification (line 15)] 
+In runVerification (line 15)]
   patches=50  min width=4 (fine cells)  factor=0.053  err=8.3718e-05  mass=1.1e-13
 
 === T9: strict single-parent tree invariants ======================

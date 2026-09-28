@@ -152,7 +152,7 @@ tests every finest-grid cell center in $|d|<\varepsilon$.
 | Full starfish run | Measured result |
 |---|---:|
 | Visible composite cells | 408,562 |
-| Uniform grid at the same finest spacing | 1,048,576.0 |
+| Uniform grid at the same finest spacing | 1,048,576 |
 | Reduction in active cell count | 61.0% |
 | Stored AMR cells, including covered coarse cells | 543,384 |
 | V-cycles | 10 |

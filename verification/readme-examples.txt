@@ -10,7 +10,7 @@ BSAM in MATLAB: elliptic (QC-ring/tree), parabolic, diffuse domain.
 [ebtsam] added level 3 (4 patch(es), 6400 cells, h = 7.812e-03)
 [ebsam] stage 3: 3 AMR level(s), 6 V-cycle(s), |r|/|f| = 6.65e-10, avg factor 0.042, 8896 visible cells
 
-ans = 
+ans =
 
   struct with fields:
 
