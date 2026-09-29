@@ -61,12 +61,18 @@ semilogy(ax,0:numel(hist)-1,hist/hist(1),'-o','Color',colors(2,:), ...
 yline(ax,1e-10,'--','Requested tolerance','Color',[0.4 0.4 0.4], ...
     'LabelHorizontalAlignment','center');
 % Fit log(r_k) = a + k*log(rho) over the last five residual samples.
-% The fitted rho is the per-V-cycle residual reduction factor.
+% The fitted rho is the per-V-cycle residual reduction factor; R^2 measures
+% goodness of fit in log-residual space over those same five samples.
 if numel(hist)>=5
     tail=numel(hist)-4:numel(hist);
-    fit=polyfit(tail-1,log(hist(tail)),1);
+    logResidual=log(hist(tail));
+    fit=polyfit(tail-1,logResidual,1);
     rho=exp(fit(1));
-    text(ax,0.97,0.96,sprintf('\\rho = %.4f',rho),'Units','normalized', ...
+    sse=sum((logResidual-polyval(fit,tail-1)).^2);
+    sst=sum((logResidual-mean(logResidual)).^2);
+    rSquared=NaN; % R^2 is undefined for a constant response.
+    if sst>0, rSquared=1-sse/sst; end
+    text(ax,0.97,0.96,sprintf('\\rho = %.4f\nR^2 = %.5f',rho,rSquared),'Units','normalized', ...
         'HorizontalAlignment','right','VerticalAlignment','top', ...
         'Interpreter','tex','FontSize',16,'BackgroundColor','white', ...
         'EdgeColor',[0.4 0.4 0.4],'Margin',6);
