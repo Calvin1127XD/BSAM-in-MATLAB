@@ -58,7 +58,19 @@ t=tiledlayout(fig,1,2,'TileSpacing','compact','Padding','compact');
 ax=nexttile(t); hist=sol.stats.stages{end}.resHist;
 semilogy(ax,0:numel(hist)-1,hist/hist(1),'-o','Color',colors(2,:), ...
     'LineWidth',2,'MarkerSize',5,'MarkerFaceColor','w'); hold(ax,'on');
-yline(ax,1e-10,'--','Requested tolerance','Color',[0.4 0.4 0.4]);
+yline(ax,1e-10,'--','Requested tolerance','Color',[0.4 0.4 0.4], ...
+    'LabelHorizontalAlignment','center');
+% Fit log(r_k) = a + k*log(rho) over the last five residual samples.
+% The fitted rho is the per-V-cycle residual reduction factor.
+if numel(hist)>=5
+    tail=numel(hist)-4:numel(hist);
+    fit=polyfit(tail-1,log(hist(tail)),1);
+    rho=exp(fit(1));
+    text(ax,0.97,0.96,sprintf('\\rho = %.4f',rho),'Units','normalized', ...
+        'HorizontalAlignment','right','VerticalAlignment','top', ...
+        'Interpreter','tex','FontSize',16,'BackgroundColor','white', ...
+        'EdgeColor',[0.4 0.4 0.4],'Margin',6);
+end
 grid(ax,'on'); xlabel(ax,'V-cycle'); ylabel(ax,'||r_k||_\infty / ||r_0||_\infty');
 title(ax,sprintf('Algebraic convergence · %d V-cycles',result.vcycles),'FontWeight','normal');
 ax=nexttile(t);
